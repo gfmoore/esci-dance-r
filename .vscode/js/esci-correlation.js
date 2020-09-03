@@ -1,20 +1,28 @@
 /*
-Program       esci-dance-r.js
+Program       esci-correlation.js
 Author        Gordon Moore
-Date          3 September 2020
-Description   The JavaScript code for esci-dance-r
+Date          20 August 2020
+Description   The JavaScript code for esci-correlation
 Licence       GNU General Public Licence Version 3, 29 June 2007
 */
 
 // #region Version history
 /*
 0.0.1   Initial version
-
+0.0.2  2020-08-26 #2 Appearance jigs
+0.0.3  2020-08-26 #1 Basic correlation. Not all flags implemented yet.
+0.0.4  2020-08-28 #1 Mostly implemented, waitimg for inevitable tweaks :)
+0.0.5  2020-08-28 #1 Fixed display of r bug
+0.0.6  2020-08-30 #1 All sorts of fixes and checking.
+0.0.7  2020-08-31 #1 Fix bounding on correlation line
+0.0.8  2020-09-01 #6 First attempt at forcing correlation to match target correlation
+0.0.9  2020-09-02 #5 Changed colours for labels in Display Lines  #8 added test data and import.
+0.0.10 2020-09-03 #9 Tooltips
 
 */
 //#endregion 
 
-let version = '0.0.1';
+let version = '0.0.10';
 
 'use strict';
 $(function() {
@@ -222,19 +230,19 @@ $(function() {
     rwidth  = $('#main').outerWidth(true)  - $('#leftpanel').outerWidth(true); 
 
     setDisplaySize();
-    //setupAxes();
+    setupAxes();
 
     setTooltips();
 
-    //setupSliders(); 
+    setupSliders(); 
 
     //calls setupdisplay setupaxes again!
     clear();
 
-    //createScatters();
-    //drawScatterGraph();
-    //statistics();
-    //displayStatistics();
+    createScatters();
+    drawScatterGraph();
+    statistics();
+    displayStatistics();
   }
 
  
