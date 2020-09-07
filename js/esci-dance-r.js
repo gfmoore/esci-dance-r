@@ -25,11 +25,17 @@ $(function() {
 
   let margin;     //margins for pdf display area
 
-  let widthD;                                                                //the true width of the pdf display area in pixels
-  let heightD;   
+  let widthS;                                                                //the true width of the pdf display area in pixels
+  let heightS;   
+
+  let widthD;
+  let heightD;
 
   let rwidth;                                                                 //the width returned by resize
   let rheight;                                                                //the height returned by resize
+
+  const $danceonoff = $('#danceonoff');
+  let danceonoff = true;
 
   let pauseId;
   let repeatId;
@@ -107,8 +113,10 @@ $(function() {
   const $confidenceellipse = $('#confidenceellipse');
   confidenceellipse = false;
 
+  let svgS;
   let svgD;                                                                           //the svg reference to pdfdisplay
-  const $display            = $('#display');
+  const $displayS            = $('#displayS');
+  const $displayD            = $('#displayD');
 
   //different representation of the scatters (some for future usage)
   let scatters = [];
@@ -208,6 +216,7 @@ $(function() {
 
     $('#cleardata').hide();
     loadTestData();
+    //end of test data
 
     $('#group1label').val('X');
     $('#group2label').val('Y');    
@@ -222,92 +231,84 @@ $(function() {
     rwidth  = $('#main').outerWidth(true)  - $('#leftpanel').outerWidth(true); 
 
     setDisplaySize();
-    //setupAxes();
 
     setTooltips();
 
-    //setupSliders(); 
-
-    //calls setupdisplay setupaxes again!
     clear();
 
-    //createScatters();
-    //drawScatterGraph();
-    //statistics();
-    //displayStatistics();
   }
 
  
-  function setupSliders() {
+  // function setupSliders() {
 
-    $('#N1slider').ionRangeSlider({
-      skin: 'big',
-      grid: true,
-      grid_num: 6,
-      type: 'single',
-      min: 0,
-      max: 300,
-      from: 4,
-      step: 1,
-      prettify: prettify0,
-      //on slider handles change
-      onChange: function (data) {
-        N1 = data.from;
-        if (N1 < 4) N1 = 4;
-        sliderinuse = true;  //don't update dslider in updateN1()
-        updateN1();  //create scatter and update to
-        $N1val.val(N1.toFixed(0));
+  //   $('#N1slider').ionRangeSlider({
+  //     skin: 'big',
+  //     grid: true,
+  //     grid_num: 6,
+  //     type: 'single',
+  //     min: 0,
+  //     max: 300,
+  //     from: 4,
+  //     step: 1,
+  //     prettify: prettify0,
+  //     //on slider handles change
+  //     onChange: function (data) {
+  //       N1 = data.from;
+  //       if (N1 < 4) N1 = 4;
+  //       sliderinuse = true;  //don't update dslider in updateN1()
+  //       updateN1();  //create scatter and update to
+  //       $N1val.val(N1.toFixed(0));
 
-        createScatters();
-        drawScatterGraph();
-        statistics();
-        displayStatistics();
-      },
-      onFinish: function(data) {
-        updateN1();
-      }
-    })
-    $N1slider = $('#N1slider').data("ionRangeSlider");
+  //       createScatters();
+  //       drawScatterGraph();
+  //       statistics();
+  //       displayStatistics();
+  //     },
+  //     onFinish: function(data) {
+  //       updateN1();
+  //     }
+  //   })
+  //   $N1slider = $('#N1slider').data("ionRangeSlider");
 
-    $('#rslider').ionRangeSlider({
-      skin: 'big',
-      grid: true,
-      grid_num: 4,
-      type: 'single',
-      min: -1,
-      max: 1,
-      from: 0.5,
-      step: 0.01,
-      prettify: prettify2,
-      //on slider handles change
-      onChange: function (data) {
-        rs = data.from;
-        sliderinuse = true;  //don't update dslider in updater()
-        updater();
-        $rval.val(rs.toFixed(2).toString().replace('0.', '.'));
-        $calculatedr.text(r.toFixed(2).toString().replace('0.', '.'))
+  //   $('#rslider').ionRangeSlider({
+  //     skin: 'big',
+  //     grid: true,
+  //     grid_num: 4,
+  //     type: 'single',
+  //     min: -1,
+  //     max: 1,
+  //     from: 0.5,
+  //     step: 0.01,
+  //     prettify: prettify2,
+  //     //on slider handles change
+  //     onChange: function (data) {
+  //       rs = data.from;
+  //       sliderinuse = true;  //don't update dslider in updater()
+  //       updater();
+  //       $rval.val(rs.toFixed(2).toString().replace('0.', '.'));
+  //       $calculatedr.text(r.toFixed(2).toString().replace('0.', '.'))
 
-        createScatters();
-        drawScatterGraph();
-        statistics();
-        displayStatistics();
-      }
-    })
-    $rslider = $('#rslider').data("ionRangeSlider");
+  //       createScatters();
+  //       drawScatterGraph();
+  //       statistics();
+  //       displayStatistics();
+  //     }
+  //   })
+  //   $rslider = $('#rslider').data("ionRangeSlider");
 
-    function prettify0(n) {
-      return n.toFixed(0);
-    }
+  //   function prettify0(n) {
+  //     return n.toFixed(0);
+  //   }
   
-    function prettify1(n) {
-      return n.toFixed(1).toString().replace('0.', '.');
-    }
+  //   function prettify1(n) {
+  //     return n.toFixed(1).toString().replace('0.', '.');
+  //   }
   
-    function prettify2(n) {
-      return n.toFixed(2).toString().replace('0.', '.');
-    }
+  //   function prettify2(n) {
+  //     return n.toFixed(2).toString().replace('0.', '.');
+  //   }
   
-  }
+  // }
 
   function updateN1() {
     if (!sliderinuse) $N1slider.update({ from: N1 })
@@ -324,12 +325,12 @@ $(function() {
   function clear() {
     //set sliders to initial
     N1 = 4;
-    updateN1();
+//temp    updateN1();
     $N1val.text(N1.toFixed(0));
 
     rs = 0.5;
     r  = 0.5;
-    updater();
+//    updater();
     $rval.text(rs.toFixed(2).toString().replace('0.', '.'));    
     $calculatedr.text(r.toFixed(2).toString().replace('0.', '.')); 
 
@@ -337,12 +338,12 @@ $(function() {
     $displaylines1.hide();
 
     setDisplaySize();
-    setupAxes();
+//    setupAxes();
   }
 
   function resize() {
     setDisplaySize();
-    setupAxes();
+//    setupAxes();
 
     //don't recreate scatters here
     drawScatterGraph();
@@ -358,22 +359,47 @@ $(function() {
     rheight = $('#main').outerHeight(true);
     rwidth  = $('#main').outerWidth(true)  - $('#leftpanel').outerWidth(true);
 
-    widthD   = rwidth - margin.left - margin.right;  
-    heightD  = rheight - margin.top - margin.bottom;
+    widthS   = (rwidth - margin.left - margin.right)/2;  
+    heightS  = (rheight - margin.top - margin.bottom)/2;
 
-    //try to keep grid square
-    if (widthD > heightD) widthD = heightD;
+    widthD   = rwidth - margin.left - margin.right;  
+    heightD  = (rheight - margin.top - margin.bottom)/2;
+
+    //try to keep scatters grid square
+    if (widthS > heightS) widthS = heightS;
     else 
-    if (widthD < heightD) heightD = widthD;
+    if (widthS < heightS) heightS = widthS;
 
   
-    //change #display
-    $display.css('width', widthD);
-    $display.css('height', heightD);
+    //change #display scatters
+    $displayS.css('width', widthS);
+    $displayS.css('height', heightS);
 
-    svgD = d3.select('#display').append('svg').attr('width', '100%').attr('height', '100%');
+    svgS = d3.select('#displayS').append('svg').attr('width', '50%').attr('height', '50%');
+
+    //add some margin to scatters display
+    $displayS.css('margin-left', widthD/2 - widthS/2);
+
+    //change #display dance
+    $displayD.css('width', widthD);
+    $displayD.css('height', heightD);
+
+    svgD = d3.select('#displayD').append('svg').attr('width', '100%').attr('height', '50%');
 
   }
+
+  //hide or show the dances panel
+  $danceonoff.on('change', function() {
+    danceonoff = $danceonoff.is(':checked');
+    if (danceonoff) {
+      $displayD.show();
+    }
+    else {
+      $displayD.hide();
+    }
+  })
+
+
 
   function setupAxes() {
     //clear axes
