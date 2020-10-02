@@ -338,12 +338,12 @@ $(function() {
     $displaylines1.hide();
 
     setDisplaySize();
-//    setupAxes();
+    setupAxes();
   }
 
   function resize() {
     setDisplaySize();
-//    setupAxes();
+    setupAxes();
 
     //don't recreate scatters here
     drawScatterGraph();
@@ -375,7 +375,7 @@ $(function() {
     $displayS.css('width', widthS);
     $displayS.css('height', heightS);
 
-    svgS = d3.select('#displayS').append('svg').attr('width', '50%').attr('height', '50%');
+    svgS = d3.select('#displayS').append('svg').attr('width', '100%').attr('height', '100%');
 
     //add some margin to scatters display
     $displayS.css('margin-left', widthD/2 - widthS/2);
@@ -384,7 +384,7 @@ $(function() {
     $displayD.css('width', widthD);
     $displayD.css('height', heightD);
 
-    svgD = d3.select('#displayD').append('svg').attr('width', '100%').attr('height', '50%');
+    svgD = d3.select('#displayD').append('svg').attr('width', '100%').attr('height', '100%');
 
   }
 
@@ -405,21 +405,31 @@ $(function() {
     //clear axes
     d3.selectAll('.xaxis').remove();
     d3.selectAll('.yaxis').remove();
+    d3.selectAll('.raxis').remove();
     d3.selectAll('.axistext').remove();
 
-    x = d3.scaleLinear().domain([-3, 3]).range([margin.left+20, widthD-margin.left]);
-    y = d3.scaleLinear().domain([-3, 3]).range([heightD-70, 50]);
+    x = d3.scaleLinear().domain([-3, 3]).range([25, widthS-25]);
+    y = d3.scaleLinear().domain([-3, 3]).range([heightS-35, 10]);
+
+    rx = d3.scaleLinear().domain([-1, 1]).range([20, widthD - 20]);
+    ry = d3.scaleLinear().domain([0, 100]).range([20, heightD - 20]);
 
     let xAxis = d3.axisBottom(x).tickPadding([10]).ticks(7).tickFormat(d3.format('')); //.ticks(20); //.tickValues([]);
-    svgD.append('g').attr('class', 'xaxis').style("font", "1.5rem sans-serif").style('padding-top', '0.5rem').attr( 'transform', `translate(0, ${heightD-70})` ).call(xAxis);
+    svgS.append('g').attr('class', 'xaxis').style("font", "1.0rem sans-serif").style('padding-top', '0.5rem').attr( 'transform', `translate(10, ${heightS-35})` ).call(xAxis);
 
     let yAxis = d3.axisLeft(y).tickPadding([10]).ticks(7).tickFormat(d3.format('')); //.ticks(20); //.tickValues([]);
-    svgD.append('g').attr('class', 'yaxis').style("font", "1.5rem sans-serif").attr( 'transform', `translate(${margin.left+20}, 0)` ).call(yAxis);
+    svgS.append('g').attr('class', 'yaxis').style("font", "1.0rem sans-serif").attr( 'transform', `translate(${35}, 0)` ).call(yAxis);
+
+    //r display
+    let rAxisTop = d3.axisBottom(rx).tickPadding([10]).ticks(7).tickFormat(d3.format('')); //.ticks(20); //.tickValues([]);
+    svgD.append('g').attr('class', 'raxis').style("font", "1.0rem sans-serif").attr( 'transform', `translate(${0}, ${heightD - 30})` ).call(rAxisTop);
+    let rAxisBottom = d3.axisTop(rx).tickPadding([10]).ticks(7).tickFormat(d3.format('')); //.ticks(20); //.tickValues([]);
+    svgD.append('g').attr('class', 'raxis').style("font", "1.0rem sans-serif").attr( 'transform', `translate(${0}, 30)` ).call(rAxisBottom);
 
 
     //add some axis labels
-    svgD.append('text').text('X').attr('class', 'axistext').attr('x', x(0.1)).attr('y', y(-3)+45).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '2.0rem').style('font-weight', 'bold').style('font-style', 'italic');
-    svgD.append('text').text('Y').attr('class', 'axistext').attr('x', x(-3)-60).attr('y', y(0)).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '2.0rem').style('font-weight', 'bold').style('font-style', 'italic');
+    svgS.append('text').text('X').attr('class', 'axistext').attr('x', x(0) + 20).attr('y', y(-3.0) + 30).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.0rem').style('font-weight', 'bold').style('font-style', 'italic');
+    svgS.append('text').text('Y').attr('class', 'axistext').attr('x', x(-3.0) - 20).attr('y', y(0.0) - 30).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.0rem').style('font-weight', 'bold').style('font-style', 'italic');
 
     //add additional ticks for x scale
     //the minor ticks
