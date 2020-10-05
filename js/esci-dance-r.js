@@ -122,7 +122,9 @@ $(function() {
   let scatters = [];
   let xscatters = [];
   let yscatters = [];
-  let scattersarray = []
+  let scattersarray = [];
+
+  let scatterSize = 3;
 
   let xs;
   let ys;
@@ -221,7 +223,7 @@ $(function() {
     $('#group1label').val('X');
     $('#group2label').val('Y');    
 
-    $confidenceellipsediv.show();
+    //$confidenceellipsediv.show();
 
 
     //get initial dimensions of #display div
@@ -232,83 +234,90 @@ $(function() {
 
     setDisplaySize();
 
+    setupSliders();
+
     setTooltips();
 
     clear();
 
+    createScatters();
+    drawScatterGraph();
+    statistics();
+    displayStatistics();
+
   }
 
  
-  // function setupSliders() {
+  function setupSliders() {
 
-  //   $('#N1slider').ionRangeSlider({
-  //     skin: 'big',
-  //     grid: true,
-  //     grid_num: 6,
-  //     type: 'single',
-  //     min: 0,
-  //     max: 300,
-  //     from: 4,
-  //     step: 1,
-  //     prettify: prettify0,
-  //     //on slider handles change
-  //     onChange: function (data) {
-  //       N1 = data.from;
-  //       if (N1 < 4) N1 = 4;
-  //       sliderinuse = true;  //don't update dslider in updateN1()
-  //       updateN1();  //create scatter and update to
-  //       $N1val.val(N1.toFixed(0));
+    $('#N1slider').ionRangeSlider({
+      skin: 'big',
+      grid: true,
+      grid_num: 6,
+      type: 'single',
+      min: 0,
+      max: 300,
+      from: 4,
+      step: 1,
+      prettify: prettify0,
+      //on slider handles change
+      onChange: function (data) {
+        N1 = data.from;
+        if (N1 < 4) N1 = 4;
+        sliderinuse = true;  //don't update dslider in updateN1()
+        updateN1();  //create scatter and update to
+        $N1val.val(N1.toFixed(0));
 
-  //       createScatters();
-  //       drawScatterGraph();
-  //       statistics();
-  //       displayStatistics();
-  //     },
-  //     onFinish: function(data) {
-  //       updateN1();
-  //     }
-  //   })
-  //   $N1slider = $('#N1slider').data("ionRangeSlider");
+        createScatters();
+        drawScatterGraph();
+        statistics();
+        displayStatistics();
+      },
+      onFinish: function(data) {
+        updateN1();
+      }
+    })
+    $N1slider = $('#N1slider').data("ionRangeSlider");
 
-  //   $('#rslider').ionRangeSlider({
-  //     skin: 'big',
-  //     grid: true,
-  //     grid_num: 4,
-  //     type: 'single',
-  //     min: -1,
-  //     max: 1,
-  //     from: 0.5,
-  //     step: 0.01,
-  //     prettify: prettify2,
-  //     //on slider handles change
-  //     onChange: function (data) {
-  //       rs = data.from;
-  //       sliderinuse = true;  //don't update dslider in updater()
-  //       updater();
-  //       $rval.val(rs.toFixed(2).toString().replace('0.', '.'));
-  //       $calculatedr.text(r.toFixed(2).toString().replace('0.', '.'))
+    $('#rslider').ionRangeSlider({
+      skin: 'big',
+      grid: true,
+      grid_num: 4,
+      type: 'single',
+      min: -1,
+      max: 1,
+      from: 0.5,
+      step: 0.01,
+      prettify: prettify2,
+      //on slider handles change
+      onChange: function (data) {
+        rs = data.from;
+        sliderinuse = true;  //don't update dslider in updater()
+        updater();
+        $rval.val(rs.toFixed(2).toString().replace('0.', '.'));
+        $calculatedr.text(r.toFixed(2).toString().replace('0.', '.'))
 
-  //       createScatters();
-  //       drawScatterGraph();
-  //       statistics();
-  //       displayStatistics();
-  //     }
-  //   })
-  //   $rslider = $('#rslider').data("ionRangeSlider");
+        createScatters();
+        drawScatterGraph();
+        statistics();
+        displayStatistics();
+      }
+    })
+    $rslider = $('#rslider').data("ionRangeSlider");
 
-  //   function prettify0(n) {
-  //     return n.toFixed(0);
-  //   }
+    function prettify0(n) {
+      return n.toFixed(0);
+    }
   
-  //   function prettify1(n) {
-  //     return n.toFixed(1).toString().replace('0.', '.');
-  //   }
+    function prettify1(n) {
+      return n.toFixed(1).toString().replace('0.', '.');
+    }
   
-  //   function prettify2(n) {
-  //     return n.toFixed(2).toString().replace('0.', '.');
-  //   }
+    function prettify2(n) {
+      return n.toFixed(2).toString().replace('0.', '.');
+    }
   
-  // }
+  }
 
   function updateN1() {
     if (!sliderinuse) $N1slider.update({ from: N1 })
@@ -325,12 +334,12 @@ $(function() {
   function clear() {
     //set sliders to initial
     N1 = 4;
-//temp    updateN1();
+    //temp    updateN1();
     $N1val.text(N1.toFixed(0));
 
     rs = 0.5;
     r  = 0.5;
-//    updater();
+    //    updater();
     $rval.text(rs.toFixed(2).toString().replace('0.', '.'));    
     $calculatedr.text(r.toFixed(2).toString().replace('0.', '.')); 
 
@@ -359,12 +368,25 @@ $(function() {
     rheight = $('#main').outerHeight(true);
     rwidth  = $('#main').outerWidth(true)  - $('#leftpanel').outerWidth(true);
 
-    widthS   = (rwidth - margin.left - margin.right)/2;  
-    heightS  = (rheight - margin.top - margin.bottom)/2;
+    if (danceonoff) {
+      widthS   = (rwidth - margin.left - margin.right)/2;  
+      heightS  = (rheight - margin.top - margin.bottom)/2;
 
-    widthD   = rwidth - margin.left - margin.right;  
-    heightD  = (rheight - margin.top - margin.bottom)/2;
+      widthD   = rwidth - margin.left - margin.right;  
+      heightD  = (rheight - margin.top - margin.bottom)/2;
 
+      scatterSize = 1.5;
+    }
+    else {
+      widthS   = (rwidth - margin.left - margin.right);  
+      heightS  = (rheight - margin.top - margin.bottom);
+
+      //probably don't need this as not shown
+      widthD   = rwidth - margin.left - margin.right;  
+      heightD  = (rheight - margin.top - margin.bottom);
+
+      scatterSize = 3;
+    }
     //try to keep scatters grid square
     if (widthS > heightS) widthS = heightS;
     else 
@@ -391,6 +413,10 @@ $(function() {
   //hide or show the dances panel
   $danceonoff.on('change', function() {
     danceonoff = $danceonoff.is(':checked');
+    setDisplaySize();
+    setupAxes();
+    drawScatterGraph();
+    displayStatistics();
     if (danceonoff) {
       $displayD.show();
     }
@@ -408,28 +434,31 @@ $(function() {
     d3.selectAll('.raxis').remove();
     d3.selectAll('.axistext').remove();
 
-    x = d3.scaleLinear().domain([-3, 3]).range([25, widthS-25]);
+    x = d3.scaleLinear().domain([-3, 3]).range([35, widthS-25]);
     y = d3.scaleLinear().domain([-3, 3]).range([heightS-35, 10]);
 
     rx = d3.scaleLinear().domain([-1, 1]).range([20, widthD - 20]);
     ry = d3.scaleLinear().domain([0, 100]).range([20, heightD - 20]);
 
     let xAxis = d3.axisBottom(x).tickPadding([10]).ticks(7).tickFormat(d3.format('')); //.ticks(20); //.tickValues([]);
-    svgS.append('g').attr('class', 'xaxis').style("font", "1.0rem sans-serif").style('padding-top', '0.5rem').attr( 'transform', `translate(10, ${heightS-35})` ).call(xAxis);
+    svgS.append('g').attr('class', 'xaxis').style("font", "1.0rem sans-serif").style('padding-top', '0.5rem').attr( 'transform', `translate(0, ${heightS-35})` ).call(xAxis);
 
     let yAxis = d3.axisLeft(y).tickPadding([10]).ticks(7).tickFormat(d3.format('')); //.ticks(20); //.tickValues([]);
     svgS.append('g').attr('class', 'yaxis').style("font", "1.0rem sans-serif").attr( 'transform', `translate(${35}, 0)` ).call(yAxis);
 
     //r display
     let rAxisTop = d3.axisBottom(rx).tickPadding([10]).ticks(7).tickFormat(d3.format('')); //.ticks(20); //.tickValues([]);
-    svgD.append('g').attr('class', 'raxis').style("font", "1.0rem sans-serif").attr( 'transform', `translate(${0}, ${heightD - 30})` ).call(rAxisTop);
+    svgD.append('g').attr('class', 'raxis').style("font", "1.0rem sans-serif").attr( 'transform', `translate(${0}, ${heightD - 40})` ).call(rAxisTop);
     let rAxisBottom = d3.axisTop(rx).tickPadding([10]).ticks(7).tickFormat(d3.format('')); //.ticks(20); //.tickValues([]);
-    svgD.append('g').attr('class', 'raxis').style("font", "1.0rem sans-serif").attr( 'transform', `translate(${0}, 30)` ).call(rAxisBottom);
+    svgD.append('g').attr('class', 'raxis').style("font", "1.0rem sans-serif").attr( 'transform', `translate(${0}, 40)` ).call(rAxisBottom);
 
 
     //add some axis labels
     svgS.append('text').text('X').attr('class', 'axistext').attr('x', x(0) + 20).attr('y', y(-3.0) + 30).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.0rem').style('font-weight', 'bold').style('font-style', 'italic');
     svgS.append('text').text('Y').attr('class', 'axistext').attr('x', x(-3.0) - 20).attr('y', y(0.0) - 30).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.0rem').style('font-weight', 'bold').style('font-style', 'italic');
+
+    svgD.append('text').text('Correlation').attr('class', 'axistext').attr('x', rx(-1) - 15).attr('y', ry(0)-10 ).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.0rem').style('font-weight', 'bold').style('font-style', 'italic');
+
 
     //add additional ticks for x scale
     //the minor ticks
@@ -439,13 +468,13 @@ $(function() {
     let minortick;
     let minortickmark;
 
-    //haf way ticks
+    //half way ticks
     for (i=1; i < interval.length; i += 1) {
       minortick = (interval[i] - interval[i-1]);
       for (let ticks = 1; ticks <= 10; ticks += 1) {
         minortickmark = interval[i-1] + (minortick * ticks);
-        if (minortickmark > -3 && minortickmark < 3) svgD.append('line').attr('class', 'xaxis').attr('x1', x(minortickmark)).attr('y1', 0).attr('x2', x(minortickmark) ).attr('y2', 10).attr('stroke', 'black').attr('stroke-width', 1).attr( 'transform', `translate(0, ${heightD})` );
-        if (minortickmark > -3 && minortickmark < 3) svgD.append('line').attr('class', 'yaxis').attr('x1', 0).attr('y1', y(minortickmark)).attr('x2', 10 ).attr('y2', y(minortickmark)).attr('stroke', 'black').attr('stroke-width', 1).attr( 'transform', `translate(0, ${heightD})` );
+        if (minortickmark > -3 && minortickmark < 3) svgS.append('line').attr('class', 'xaxis').attr('x1', x(minortickmark)).attr('y1', 0).attr('x2', x(minortickmark) ).attr('y2', 10).attr('stroke', 'black').attr('stroke-width', 1).attr( 'transform', `translate(0, ${heightD})` );
+        if (minortickmark > -3 && minortickmark < 3) svgS.append('line').attr('class', 'yaxis').attr('x1', 0).attr('y1', y(minortickmark)).attr('x2', 10 ).attr('y2', y(minortickmark)).attr('stroke', 'black').attr('stroke-width', 1).attr( 'transform', `translate(0, ${heightD})` );
 
       }
     }
@@ -456,8 +485,8 @@ $(function() {
     //   for (let ticks = 1; ticks <= 10; ticks += 1) {
     //     minortickmark = interval[i-1] + (minortick * ticks);
     //     if (minortickmark > -3 && minortickmark < 3) {
-    //          svgD.append('line').attr('class', 'xaxis').attr('x1', x(minortickmark)).attr('y1', 0).attr('x2', x(minortickmark) ).attr('y2', 5).attr('stroke', 'black').attr('stroke-width', 1).attr( 'transform', `translate(0, ${heightD})` );
-    //          svgD.append('line').attr('class', 'yaxis').attr('x1', 0).attr('y1', y(minortickmark)).attr('x2', 5 ).attr('y2', y(minortickmark)).attr('stroke', 'black').attr('stroke-width', 1).attr( 'transform', `translate(0, ${heightD})` );
+    //          svgS.append('line').attr('class', 'xaxis').attr('x1', x(minortickmark)).attr('y1', 0).attr('x2', x(minortickmark) ).attr('y2', 5).attr('stroke', 'black').attr('stroke-width', 1).attr( 'transform', `translate(0, ${heightD})` );
+    //          svgS.append('line').attr('class', 'yaxis').attr('x1', 0).attr('y1', y(minortickmark)).attr('x2', 5 ).attr('y2', y(minortickmark)).attr('stroke', 'black').attr('stroke-width', 1).attr( 'transform', `translate(0, ${heightD})` );
     //      }
     //   }
     // }
@@ -507,14 +536,14 @@ $(function() {
           r = jStat.corrcoeff( xscatters, ysa );  
           diff = (rs + 1) - (r + 1);   //keep rs r positive
 
-          lg('T = ' + T.toFixed(4) + '    Diff = ' + diff.toFixed(4));
+          //lg('T = ' + T.toFixed(4) + '    Diff = ' + diff.toFixed(4));
           if (min > Math.abs(diff)) {
             min = Math.abs(diff);
             minT = T;
           }
         }
       
-        lg('Minimum = ' + min.toFixed(4) + ' Minimum T = ' + minT);
+        //lg('Minimum = ' + min.toFixed(4) + ' Minimum T = ' + minT);
 
         scatters = []
         for (i = 0; i < N1; i += 1) {
@@ -559,27 +588,33 @@ $(function() {
     d3.selectAll('.marginals').remove();
     d3.selectAll('.confidenceellipse').remove();
 
+    //test scatters at corners
+    // svgS.append('circle').attr('class', 'scatters').attr('cx', x(-3)).attr('cy', y(-3)).attr('r', scatterSize).attr('stroke', 'red').attr('stroke-width', 2).attr('fill', 'red');      
+    // svgS.append('circle').attr('class', 'scatters').attr('cx', x(-3)).attr('cy', y(3)).attr('r', scatterSize).attr('stroke', 'red').attr('stroke-width', 2).attr('fill', 'red');      
+    // svgS.append('circle').attr('class', 'scatters').attr('cx', x(3)).attr('cy', y(-3)).attr('r', scatterSize).attr('stroke', 'red').attr('stroke-width', 2).attr('fill', 'red');      
+    // svgS.append('circle').attr('class', 'scatters').attr('cx', x(3)).attr('cy', y(3)).attr('r', scatterSize).attr('stroke', 'red').attr('stroke-width', 2).attr('fill', 'red');      
+
     //display scatters
     for (i = 0; i < scatters.length; i += 1) {
-      if      (scatters[i].x < -3)  svgD.append('circle').attr('class', 'scatters').attr('cx', x(-3.05)).attr('cy', y(scatters[i].y)).attr('r', '3').attr('stroke', 'red').attr('stroke-width', 2).attr('fill', 'red');      
-      else if (scatters[i].x > 3)   svgD.append('circle').attr('class', 'scatters').attr('cx', x(3.05)).attr('cy', y(scatters[i].y)).attr('r', '3').attr('stroke', 'red').attr('stroke-width', 2).attr('fill', 'red'); 
-      else if (scatters[i].y < -3)  svgD.append('circle').attr('class', 'scatters').attr('cx', x(scatters[i].x)).attr('cy', y(-3.05)).attr('r', '3').attr('stroke', 'red').attr('stroke-width', 2).attr('fill', 'red'); 
-      else if (scatters[i].y > 3)   svgD.append('circle').attr('class', 'scatters').attr('cx', x(scatters[i].x)).attr('cy', y(3.05)).attr('r', '3').attr('stroke', 'red').attr('stroke-width', 2).attr('fill', 'red'); 
-      else  /*normal*/              svgD.append('circle').attr('class', 'scatters').attr('cx', x(scatters[i].x)).attr('cy', y(scatters[i].y)).attr('r', '3').attr('stroke', 'blue').attr('stroke-width', 2).attr('fill', 'blue');
+      if      (scatters[i].x < -3)  svgS.append('circle').attr('class', 'scatters').attr('cx', x(-3.05)).attr('cy', y(scatters[i].y)).attr('r', scatterSize).attr('stroke', 'red').attr('stroke-width', 2).attr('fill', 'red');      
+      else if (scatters[i].x > 3)   svgS.append('circle').attr('class', 'scatters').attr('cx', x(3.05)).attr('cy', y(scatters[i].y)).attr('r', scatterSize).attr('stroke', 'red').attr('stroke-width', 2).attr('fill', 'red'); 
+      else if (scatters[i].y < -3)  svgS.append('circle').attr('class', 'scatters').attr('cx', x(scatters[i].x)).attr('cy', y(-3.05)).attr('r', scatterSize).attr('stroke', 'red').attr('stroke-width', 2).attr('fill', 'red'); 
+      else if (scatters[i].y > 3)   svgS.append('circle').attr('class', 'scatters').attr('cx', x(scatters[i].x)).attr('cy', y(3.05)).attr('r', scatterSize).attr('stroke', 'red').attr('stroke-width', 2).attr('fill', 'red'); 
+      else  /*normal*/              svgS.append('circle').attr('class', 'scatters').attr('cx', x(scatters[i].x)).attr('cy', y(scatters[i].y)).attr('r', scatterSize).attr('stroke', 'blue').attr('stroke-width', 2).attr('fill', 'blue');
     }
 
     //display marginals
-    if (displaymd) {
-      for (i = 0; i < scatters.length; i += 1) {
-        if      (scatters[i].y < -3) svgD.append('circle').attr('class', 'scatters').attr('cx', x(-2.95)).attr('cy', y(-3.05)).attr('r', '3').attr('stroke', 'black').attr('stroke-width', 1).attr('fill', 'black');
-        else if (scatters[i].y > 3)  svgD.append('circle').attr('class', 'scatters').attr('cx', x(-2.95)).attr('cy', y(3.05)).attr('r', '3').attr('stroke', 'black').attr('stroke-width', 1).attr('fill', 'black');
-        else                         svgD.append('circle').attr('class', 'scatters').attr('cx', x(-2.95)).attr('cy', y(scatters[i].y)).attr('r', '3').attr('stroke', 'black').attr('stroke-width', 1).attr('fill', 'none');
+    // if (displaymd) {
+    //   for (i = 0; i < scatters.length; i += 1) {
+    //     if      (scatters[i].y < -3) svgS.append('circle').attr('class', 'scatters').attr('cx', x(-2.95)).attr('cy', y(-3.05)).attr('r', scatterSize).attr('stroke', 'black').attr('stroke-width', 1).attr('fill', 'black');
+    //     else if (scatters[i].y > 3)  svgS.append('circle').attr('class', 'scatters').attr('cx', x(-2.95)).attr('cy', y(3.05)).attr('r', scatterSize).attr('stroke', 'black').attr('stroke-width', 1).attr('fill', 'black');
+    //     else                         svgS.append('circle').attr('class', 'scatters').attr('cx', x(-2.95)).attr('cy', y(scatters[i].y)).attr('r', scatterSize).attr('stroke', 'black').attr('stroke-width', 1).attr('fill', 'none');
  
-        if      (scatters[i].x < -3) svgD.append('circle').attr('class', 'scatters').attr('cx', x(-3.05)).attr('cy', y(-2.95)).attr('r', '3').attr('stroke', 'black').attr('stroke-width', 1).attr('fill', 'black');
-        else if (scatters[i].x > 3)  svgD.append('circle').attr('class', 'scatters').attr('cx', x(3.05)).attr('cy', y(-2.95)).attr('r', '3').attr('stroke', 'black').attr('stroke-width', 1).attr('fill', 'black');
-        else                         svgD.append('circle').attr('class', 'scatters').attr('cx', x(scatters[i].x)).attr('cy', y(-2.95)).attr('r', '3').attr('stroke', 'black').attr('stroke-width', 1).attr('fill', 'none');
-      }
-    }
+    //     if      (scatters[i].x < -3) svgS.append('circle').attr('class', 'scatters').attr('cx', x(-3.05)).attr('cy', y(-2.95)).attr('r', scatterSize).attr('stroke', 'black').attr('stroke-width', 1).attr('fill', 'black');
+    //     else if (scatters[i].x > 3)  svgS.append('circle').attr('class', 'scatters').attr('cx', x(3.05)).attr('cy', y(-2.95)).attr('r', scatterSize).attr('stroke', 'black').attr('stroke-width', 1).attr('fill', 'black');
+    //     else                         svgS.append('circle').attr('class', 'scatters').attr('cx', x(scatters[i].x)).attr('cy', y(-2.95)).attr('r', scatterSize).attr('stroke', 'black').attr('stroke-width', 1).attr('fill', 'none');
+    //   }
+    // }
   }
 
   function statistics() {
@@ -650,19 +685,19 @@ $(function() {
 
     //display calculated r on graph
     if(displayr) { 
-      svgD.append('text').text('r = ').attr('class', 'rtext').attr('x', 150).attr('y', y(2.8)).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '2.0rem').style('font-weight', 'bold').style('font-style', 'italic');
-      svgD.append('text').text(r.toFixed(2).toString().replace('0.', '.')).attr('class', 'rtext').attr('x', 200).attr('y', y(2.8)).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '2.0rem').style('font-weight', 'bold');
+      svgS.append('text').text('r = ').attr('class', 'rtext').attr('x', 50).attr('y', y(2.8)).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.5rem').style('font-weight', 'bold').style('font-style', 'italic');
+      svgS.append('text').text(r.toFixed(2).toString().replace('0.', '.')).attr('class', 'rtext').attr('x', 80).attr('y', y(2.8)).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.5rem').style('font-weight', 'bold');
     }
 
     //need to create a clipping rectangle
-    let mask = svgD.append('defs').append('clipPath').attr('id', 'mask').append('rect').attr('x', x(-3)).attr('y', y(3)).attr('width', x(3) - x(-3)).attr('height', y(-3) - y(3));
+    let mask = svgS.append('defs').append('clipPath').attr('id', 'mask').append('rect').attr('x', x(-3)).attr('y', y(3)).attr('width', x(3) - x(-3)).attr('height', y(-3) - y(3));
     //show clip area -- 
-    //svgD.append('rect').attr('class', 'test').attr('x', x(-3)).attr('y', y(3)).attr('width', x(3) - x(-3)).attr('height', y(-3) - y(3)).attr('stroke', 'black').attr('stroke-width', '0').attr('fill', 'rgb(255, 255, 0, 0.5)');
+    //svgS.append('rect').attr('class', 'test').attr('x', x(-3)).attr('y', y(3)).attr('width', x(3) - x(-3)).attr('height', y(-3) - y(3)).attr('stroke', 'black').attr('stroke-width', '0').attr('fill', 'rgb(255, 255, 0, 0.5)');
 
     //cross through means
     if (displayctm) {
-      svgD.append('line').attr('class', 'ctm').attr('x1', x(Mx)).attr('y1', y(-3)).attr('x2', x(Mx) ).attr('y2', y(3)).attr('stroke', 'black').attr('stroke-width', 1).style('stroke-dasharray', ('3, 3'));
-      svgD.append('line').attr('class', 'ctm').attr('x1', x(-3)).attr('y1', y(My)).attr('x2', x(3)).attr('y2', y(My)).attr('stroke', 'black').attr('stroke-width', 1).style('stroke-dasharray', ('3, 3'));
+      svgS.append('line').attr('class', 'ctm').attr('x1', x(Mx)).attr('y1', y(-3)).attr('x2', x(Mx) ).attr('y2', y(3)).attr('stroke', 'black').attr('stroke-width', 1).style('stroke-dasharray', ('3, 3'));
+      svgS.append('line').attr('class', 'ctm').attr('x1', x(-3)).attr('y1', y(My)).attr('x2', x(3)).attr('y2', y(My)).attr('stroke', 'black').attr('stroke-width', 1).style('stroke-dasharray', ('3, 3'));
     }
 
     $corryxval.text((betayonx).toFixed(2).toString().replace('0.', '.'));
@@ -671,17 +706,17 @@ $(function() {
 
     //corryx = true;
     if (corryx) {
-      svgD.append('line').attr('class', 'regression').attr('x1', x(-3)).attr('y1', y(yvalueyxA)).attr('x2', x(3) ).attr('y2', y(yvalueyxB)).attr('stroke', 'blue').attr('stroke-width', 1).attr('clip-path', 'url(#mask)');
+      svgS.append('line').attr('class', 'regression').attr('x1', x(-3)).attr('y1', y(yvalueyxA)).attr('x2', x(3) ).attr('y2', y(yvalueyxB)).attr('stroke', 'blue').attr('stroke-width', 1).attr('clip-path', 'url(#mask)');
     }
 
     //corrxy = true;
     if (corrxy) {
-      svgD.append('line').attr('class', 'regression').attr('x1', x(xvaluexyA)).attr('y1', y(-3)).attr('x2', x(xvaluexyB) ).attr('y2', y(3)).attr('stroke', 'red').attr('stroke-width', 1).attr('clip-path', 'url(#mask)');
+      svgS.append('line').attr('class', 'regression').attr('x1', x(xvaluexyA)).attr('y1', y(-3)).attr('x2', x(xvaluexyB) ).attr('y2', y(3)).attr('stroke', 'red').attr('stroke-width', 1).attr('clip-path', 'url(#mask)');
     }
 
     //corrlineslope = true;
     if (corrlineslope) {
-      svgD.append('line').attr('class', 'regression').attr('x1', x(-3) ).attr('y1', y(yvaluecl1) ).attr('x2', x(3) ).attr('y2', y(yvaluecl2) ).attr('stroke', 'black').attr('stroke-width', 1).attr('clip-path', 'url(#mask)');
+      svgS.append('line').attr('class', 'regression').attr('x1', x(-3) ).attr('y1', y(yvaluecl1) ).attr('x2', x(3) ).attr('y2', y(yvaluecl2) ).attr('stroke', 'black').attr('stroke-width', 1).attr('clip-path', 'url(#mask)');
     }
     
     //confidenceellipse = true;
@@ -744,29 +779,29 @@ $(function() {
       //https://www.visiondummy.com/2014/04/draw-error-ellipse-representing-covariance-matrix/
 
       //markers (for arrows)
-      svgD.append("defs").append("svg:marker").attr('id', 'arrowred')
+      svgS.append("defs").append("svg:marker").attr('id', 'arrowred')
         .attr("viewBox", "0 0 10 10").attr("refX", 1).attr("refY", 5).attr("markerWidth", 3).attr("markerHeight", 3)
         .attr("orient", "auto").append("svg:path").attr("d", "M 0 0 L 10 5 L 0 10 z")
         .attr('fill', 'red');
       
-      svgD.append("defs").append("svg:marker").attr('id', 'arrowgreen')
+      svgS.append("defs").append("svg:marker").attr('id', 'arrowgreen')
         .attr("viewBox", "0 0 10 10").attr("refX", 1).attr("refY", 5).attr("markerWidth", 3).attr("markerHeight", 3)
         .attr("orient", "auto").append("svg:path").attr("d", "M 0 0 L 10 5 L 0 10 z")
         .attr('fill', 'green');
 
 
       //covariance error ellipse
-      if (angle >= 0) svgD.append('ellipse').attr('class', 'confidenceellipse').attr( 'cx', x(Mx) ).attr('cy', y(My) ).attr('rx', semimajor * widthD / 6).attr('ry', semiminor * heightD / 6).attr('transform', `rotate( ${-angle}, ${x(Mx)}, ${y(My)} )`).attr('stroke', 'orange').attr('stroke-width', 3).attr('fill', 'none');//.attr('clip-path', 'url(#mask)');
-      else            svgD.append('ellipse').attr('class', 'confidenceellipse').attr( 'cx', x(Mx) ).attr('cy', y(My) ).attr('rx', semimajor * widthD / 6).attr('ry', semiminor * heightD / 6).attr('transform', `rotate( ${180-angle}, ${x(Mx)}, ${y(My)} )`).attr('stroke', 'orange').attr('stroke-width', 3).attr('fill', 'none')//;.attr('clip-path', 'url(#mask)');
+      if (angle >= 0) svgS.append('ellipse').attr('class', 'confidenceellipse').attr( 'cx', x(Mx) ).attr('cy', y(My) ).attr('rx', semimajor * widthD / 6).attr('ry', semiminor * heightD / 6).attr('transform', `rotate( ${-angle}, ${x(Mx)}, ${y(My)} )`).attr('stroke', 'orange').attr('stroke-width', 3).attr('fill', 'none');//.attr('clip-path', 'url(#mask)');
+      else            svgS.append('ellipse').attr('class', 'confidenceellipse').attr( 'cx', x(Mx) ).attr('cy', y(My) ).attr('rx', semimajor * widthD / 6).attr('ry', semiminor * heightD / 6).attr('transform', `rotate( ${180-angle}, ${x(Mx)}, ${y(My)} )`).attr('stroke', 'orange').attr('stroke-width', 3).attr('fill', 'none')//;.attr('clip-path', 'url(#mask)');
 
       //eigenvectors
       //major
-      if (angle >= 0) svgD.append('line').attr('class', 'regression').attr('x1', x(Mx)).attr('y1', y(My)).attr('x2', x(Mx) + semimajor * widthD / 6 ).attr('y2', y(My) ).attr('transform', `rotate( ${-angle}, ${x(Mx)}, ${y(My)} )`).attr('stroke', 'red').attr('stroke-width', 3).attr('marker-end', 'url(#arrowred)');//.attr('clip-path', 'url(#mask)');
-      else           svgD.append('line').attr('class', 'regression').attr('x1', x(Mx)).attr('y1', y(My)).attr('x2', x(Mx) + semimajor * widthD / 6 ).attr('y2', y(My) ).attr('transform', `rotate( ${180-angle}, ${x(Mx)}, ${y(My)} )`).attr('stroke', 'red').attr('stroke-width', 3).attr('marker-end', 'url(#arrowred)');//.attr('clip-path', 'url(#mask)');
+      if (angle >= 0) svgS.append('line').attr('class', 'regression').attr('x1', x(Mx)).attr('y1', y(My)).attr('x2', x(Mx) + semimajor * widthD / 6 ).attr('y2', y(My) ).attr('transform', `rotate( ${-angle}, ${x(Mx)}, ${y(My)} )`).attr('stroke', 'red').attr('stroke-width', 3).attr('marker-end', 'url(#arrowred)');//.attr('clip-path', 'url(#mask)');
+      else           svgS.append('line').attr('class', 'regression').attr('x1', x(Mx)).attr('y1', y(My)).attr('x2', x(Mx) + semimajor * widthD / 6 ).attr('y2', y(My) ).attr('transform', `rotate( ${180-angle}, ${x(Mx)}, ${y(My)} )`).attr('stroke', 'red').attr('stroke-width', 3).attr('marker-end', 'url(#arrowred)');//.attr('clip-path', 'url(#mask)');
 
       //minor
-      if (angle >= 0) svgD.append('line').attr('class', 'regression').attr('x1', x(Mx)).attr('y1', y(My)).attr('x2', x(Mx) ).attr('y2', y(My) - semiminor * heightD / 6 ).attr('transform', `rotate( ${-angle}, ${x(Mx)}, ${y(My)} )`).attr('stroke', 'green').attr('stroke-width', 3).attr('marker-end', 'url(#arrowgreen)');//.attr('clip-path', 'url(#mask)');
-      else           svgD.append('line').attr('class', 'regression').attr('x1', x(Mx)).attr('y1', y(My)).attr('x2', x(Mx) ).attr('y2', y(My) + semiminor * heightD / 6 ).attr('transform', `rotate( ${180-angle}, ${x(Mx)}, ${y(My)} )`).attr('stroke', 'green').attr('stroke-width', 3).attr('marker-end', 'url(#arrowgreen)');//.attr('clip-path', 'url(#mask)');
+      if (angle >= 0) svgS.append('line').attr('class', 'regression').attr('x1', x(Mx)).attr('y1', y(My)).attr('x2', x(Mx) ).attr('y2', y(My) - semiminor * heightD / 6 ).attr('transform', `rotate( ${-angle}, ${x(Mx)}, ${y(My)} )`).attr('stroke', 'green').attr('stroke-width', 3).attr('marker-end', 'url(#arrowgreen)');//.attr('clip-path', 'url(#mask)');
+      else           svgS.append('line').attr('class', 'regression').attr('x1', x(Mx)).attr('y1', y(My)).attr('x2', x(Mx) ).attr('y2', y(My) + semiminor * heightD / 6 ).attr('transform', `rotate( ${180-angle}, ${x(Mx)}, ${y(My)} )`).attr('stroke', 'green').attr('stroke-width', 3).attr('marker-end', 'url(#arrowgreen)');//.attr('clip-path', 'url(#mask)');
 
     }
 
