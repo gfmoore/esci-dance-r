@@ -193,6 +193,37 @@ $(function() {
 
   let loaddata = true;
 
+
+  const $latestsamplesection = $('#latestsamplesection');
+  const $CIsection = $('#CIsection');
+  const $capturesection = $('#capturesection');
+
+  const $clear = $('#clear');                         //the clear button
+  const $takeSample = $('#takesample');               //take one sample
+  const $runFreely = $('#runfreely');                 //toggle for run freely
+  let runFreely = false;                              //runfreely flag
+  const $speed = $('#speed');                         //speed slider mS
+  let speed;
+  let triggerTakeSample;                              //for use in the start stop timer
+
+  const $latestsample = $('#latestsample');
+  const $ci = $('#CI');
+  const $cifrom = $('#cifrom');
+  const $cito   = $('#cito');
+
+  const $displaylinetomarkrho = $('#displaylinetomarkrho');
+  let displaylinetomarkrho = false;
+
+  const $showcapture = $('#showcapture');
+  let showcapture = false;
+
+  const $numbersamplestaken = $('#numbersamplestaken');
+
+  const $lowerarm = $('#lowerarm');
+  const $upperarm = $('#upperarm');
+
+  const $percentCIcapture = $('#percentCIcapture');
+
   //#endregion
 
   //breadcrumbs
@@ -204,28 +235,12 @@ $(function() {
 
   function initialise() {
     
-    //TEST info panel
-    $('#displayinfopaneldiv').hide();
-    $('#confidenceellipsediv').hide();
-    confidenceellipse = false;
-
-    //Test data 
-    $loadtestdatapanel.hide();
-    $cleardatayes.hide();
-    $cleardatano.hide();
-
-    $datasetdiv.hide();
-
-    $('#cleardata').hide();
-    loadTestData();
-    //end of test data
-
-    $('#group1label').val('X');
-    $('#group2label').val('Y');    
-
-    //$confidenceellipsediv.show();
-
-
+    //show dance panels
+    // $displayD.hide();
+    // $latestsamplesection.hide();
+    // $CIsection.hide();
+    // $capturesection.hide();
+  
     //get initial dimensions of #display div
     margin = {top: 30, right: 50, bottom: 20, left: 50}; 
 
@@ -233,18 +248,11 @@ $(function() {
     rwidth  = $('#main').outerWidth(true)  - $('#leftpanel').outerWidth(true); 
 
     setDisplaySize();
-
     setupSliders();
-
     setTooltips();
 
     clear();
-
-    createScatters();
-    drawScatterGraph();
-    statistics();
-    displayStatistics();
-
+    takeSample();
   }
 
  
@@ -332,6 +340,8 @@ $(function() {
 
   //set everything to a default state.
   function clear() {
+    Fhalt = false;
+
     //set sliders to initial
     N1 = 4;
     //temp    updateN1();
@@ -345,6 +355,8 @@ $(function() {
 
     $statistics1.hide();
     $displaylines1.hide();
+
+    speed = parseInt($speed.val());
 
     setDisplaySize();
     setupAxes();
@@ -409,22 +421,6 @@ $(function() {
     svgD = d3.select('#displayD').append('svg').attr('width', '100%').attr('height', '100%');
 
   }
-
-  //hide or show the dances panel
-  $danceonoff.on('change', function() {
-    danceonoff = $danceonoff.is(':checked');
-    setDisplaySize();
-    setupAxes();
-    drawScatterGraph();
-    displayStatistics();
-    if (danceonoff) {
-      $displayD.show();
-    }
-    else {
-      $displayD.hide();
-    }
-  })
-
 
 
   function setupAxes() {
@@ -493,6 +489,12 @@ $(function() {
 
   }
 
+  function takeSample() {
+    createScatters();
+    drawScatterGraph();
+    statistics();
+    displayStatistics();
+  }
 
   function createScatters() {
 
@@ -719,116 +721,71 @@ $(function() {
       svgS.append('line').attr('class', 'regression').attr('x1', x(-3) ).attr('y1', y(yvaluecl1) ).attr('x2', x(3) ).attr('y2', y(yvaluecl2) ).attr('stroke', 'black').attr('stroke-width', 1).attr('clip-path', 'url(#mask)');
     }
     
-    //confidenceellipse = true;
-    drawConfidenceEllipse();
-
   }
 
 
-  function drawConfidenceEllipse() {
-    if (confidenceellipse) {
+  /*-------------------Panel 3 Controls ------------------*/
 
-      $('#covxx').text(Cxx.toFixed(2));
-      $('#covxy').text(Cxy.toFixed(2));
-      $('#covyx').text(Cyx.toFixed(2));
-      $('#covyy').text(Cyy.toFixed(2));    
-  
-      //get the gradient of betaxony from normal perspective
-      let betaxonygradient = (3 - -3)/(xvaluexyB - xvaluexyA);
+  //clear button
+  $clear.on('click', function() {
+    stop();
+    clear();
+  })
 
-      //create a math.matrix representation
-      //create Cholesky decomposition from covariance matrix
-      // let cov = math.matrix([[covxx, covxy], [covyx, covyy]]);
-      // print(cov); 
-      // cov = math.diag(cov);
-      // print(cov);
-      // cov = math.diag(cov);
-      // print(cov);
-      // cov = math.sqrt(cov);
-      // print(cov);
-      
-      // let eigs = math.eigs(cov)
-      // print(eigs);
-
-      //find eigenvectors and eigenvalues  //depends on which is which
-      let lambda1 = quadraticB(1, -(Cxx+Cyy), (Cxx*Cyy - Cxy*Cyx))
-      let lambda2 = quadraticA(1, -(Cxx+Cyy), (Cxx*Cyy - Cxy*Cyx))
-
-      let eigenvector1 = -Cxy/(Cyy-lambda1);  //x=1
-      let eigenvector2 = -Cxy/(Cyy-lambda2);  //x=1
-
-      $('#lambda1').text(lambda1.toFixed(2));
-      $('#y1').text(eigenvector1.toFixed(2));
-
-      $('#lambda2').text(lambda2.toFixed(2));
-      $('#y2').text(eigenvector2.toFixed(2));
-
-      semimajor = Sx * Math.sqrt(4.605 * lambda1); //90% = 4.605 ,95% = 5.991, 99% = 9.210
-      semiminor = Sy * Math.sqrt(4.605 * lambda2); 
-
-      angle; // = 90 =>horizontal!!
-      let angle1 = Math.atan(eigenvector1) * 180/Math.PI;
-      let angle2 = Math.atan(eigenvector2) * 180/Math.PI;
-
-      if (lambda1 >= lambda2) angle = angle1; else angle = angle2; 
-
-      //get gradient of eigenvector so I can draw a line  Actually this is eigenvector1
-      //let gradient = eigenvector1;  //or gradient = Math.tan(angle/180 * Math.PI);
- 
-
-      //https://www.visiondummy.com/2014/04/draw-error-ellipse-representing-covariance-matrix/
-
-      //markers (for arrows)
-      svgS.append("defs").append("svg:marker").attr('id', 'arrowred')
-        .attr("viewBox", "0 0 10 10").attr("refX", 1).attr("refY", 5).attr("markerWidth", 3).attr("markerHeight", 3)
-        .attr("orient", "auto").append("svg:path").attr("d", "M 0 0 L 10 5 L 0 10 z")
-        .attr('fill', 'red');
-      
-      svgS.append("defs").append("svg:marker").attr('id', 'arrowgreen')
-        .attr("viewBox", "0 0 10 10").attr("refX", 1).attr("refY", 5).attr("markerWidth", 3).attr("markerHeight", 3)
-        .attr("orient", "auto").append("svg:path").attr("d", "M 0 0 L 10 5 L 0 10 z")
-        .attr('fill', 'green');
-
-
-      //covariance error ellipse
-      if (angle >= 0) svgS.append('ellipse').attr('class', 'confidenceellipse').attr( 'cx', x(Mx) ).attr('cy', y(My) ).attr('rx', semimajor * widthD / 6).attr('ry', semiminor * heightD / 6).attr('transform', `rotate( ${-angle}, ${x(Mx)}, ${y(My)} )`).attr('stroke', 'orange').attr('stroke-width', 3).attr('fill', 'none');//.attr('clip-path', 'url(#mask)');
-      else            svgS.append('ellipse').attr('class', 'confidenceellipse').attr( 'cx', x(Mx) ).attr('cy', y(My) ).attr('rx', semimajor * widthD / 6).attr('ry', semiminor * heightD / 6).attr('transform', `rotate( ${180-angle}, ${x(Mx)}, ${y(My)} )`).attr('stroke', 'orange').attr('stroke-width', 3).attr('fill', 'none')//;.attr('clip-path', 'url(#mask)');
-
-      //eigenvectors
-      //major
-      if (angle >= 0) svgS.append('line').attr('class', 'regression').attr('x1', x(Mx)).attr('y1', y(My)).attr('x2', x(Mx) + semimajor * widthD / 6 ).attr('y2', y(My) ).attr('transform', `rotate( ${-angle}, ${x(Mx)}, ${y(My)} )`).attr('stroke', 'red').attr('stroke-width', 3).attr('marker-end', 'url(#arrowred)');//.attr('clip-path', 'url(#mask)');
-      else           svgS.append('line').attr('class', 'regression').attr('x1', x(Mx)).attr('y1', y(My)).attr('x2', x(Mx) + semimajor * widthD / 6 ).attr('y2', y(My) ).attr('transform', `rotate( ${180-angle}, ${x(Mx)}, ${y(My)} )`).attr('stroke', 'red').attr('stroke-width', 3).attr('marker-end', 'url(#arrowred)');//.attr('clip-path', 'url(#mask)');
-
-      //minor
-      if (angle >= 0) svgS.append('line').attr('class', 'regression').attr('x1', x(Mx)).attr('y1', y(My)).attr('x2', x(Mx) ).attr('y2', y(My) - semiminor * heightD / 6 ).attr('transform', `rotate( ${-angle}, ${x(Mx)}, ${y(My)} )`).attr('stroke', 'green').attr('stroke-width', 3).attr('marker-end', 'url(#arrowgreen)');//.attr('clip-path', 'url(#mask)');
-      else           svgS.append('line').attr('class', 'regression').attr('x1', x(Mx)).attr('y1', y(My)).attr('x2', x(Mx) ).attr('y2', y(My) + semiminor * heightD / 6 ).attr('transform', `rotate( ${180-angle}, ${x(Mx)}, ${y(My)} )`).attr('stroke', 'green').attr('stroke-width', 3).attr('marker-end', 'url(#arrowgreen)');//.attr('clip-path', 'url(#mask)');
-
-    }
-
-    
-    function quadraticA(a, b, c) {
-      let xA = (-b - Math.sqrt(b * b - 4 * a * c))/(2 * a);
-      return xA;
-    }
-
-    function quadraticB(a, b, c) {
-      let xB = (-b + Math.sqrt(b * b - 4 * a * c))/(2 * a);
-      return xB;
-    }
-
-  }
-
-  /*--------------------------------------New Data Set----------------*/ 
-
-  $newdataset.on('click', function() {  //button
+  //take one sample
+  $takeSample.on('click', function() {
+    if (runFreely) stop();
+    if (Fhalt) clear();  //Fhalt reset in clear()
 
     createScatters();
     drawScatterGraph();
     statistics();
     displayStatistics();
+
+    //takeSample();
   })
 
-  /*--------------------------------------Display Features-------------*/
+  //run freely
+  $runFreely.on('click', function() {
+    if (Fhalt) clear();  //Fhalt reset in clear()
+    if (!runFreely) {
+      start();
+    }
+    else {
+      stop();
+    }
+  })
+
+  function start() {
+    runFreely = true;
+    $runFreely.css('background-color', 'red');
+    $runFreely.text('Stop');
+    //now trigger the TakeSample code
+    triggerTakeSample = setInterval(takeSample, speed);
+  }
+
+  function stop() {
+    runFreely = false;
+    $runFreely.css('background-color', 'rgb(148, 243, 148)');
+    $runFreely.text('Run Stop');
+    //now stop the triggering
+    clearInterval(triggerTakeSample);
+  }
+
+  //if slider for speed changes
+  $speed.on('change', function() {
+    speed = parseInt( $('#speed').val() );
+    if (runFreely) {
+      clearInterval(triggerTakeSample);
+      triggerTakeSample = setInterval(takeSample, speed);
+    }
+    else {
+      //don't do anything
+    }
+  })
+
+
+  /*---------------------Panel 4 Display Features-------------*/
 
   $displayr.on('change', function() {
     displayr = $displayr.is(':checked');
@@ -858,7 +815,8 @@ $(function() {
   })
 
 
-  //show statistics
+  //------------------Panel 5 Descriptive statistics-----------------------
+
   $statistics1show.on('change', function() {
     statistics1show = $statistics1show.prop('checked');
     if (statistics1show) {
@@ -870,7 +828,9 @@ $(function() {
 
   })
 
-  //show display lines
+
+  //------------------Panel 6 Display lines--------------------------------
+
   $displaylines1show.on('change', function() {
     displaylines1show = $displaylines1show.prop('checked');
     if (displaylines1show) {
@@ -931,7 +891,53 @@ $(function() {
   })
 
 
-/*----------------------------------------N1 nudge bars-----------*/
+  //--------------Tab 1 Panel 7  Dance of the r values-------------------------
+
+  //hide or show the dances panel  
+  $danceonoff.on('change', function() {
+    danceonoff = $danceonoff.is(':checked');
+    setDisplaySize();
+    setupAxes();
+    drawScatterGraph();
+    displayStatistics();
+    if (danceonoff) {
+      $displayD.show();
+
+      $latestsamplesection.show();
+      $CIsection.show();
+      $capturesection.show();      
+    }
+    else {
+      $displayD.hide();
+
+      $latestsamplesection.hide();
+      $CIsection.hide();
+      $capturesection.hide();
+
+    }
+  })
+  
+  
+  //--------------------Panel 9 Confidence Intervals---------------------
+
+  //Select confidence interval % and alpha
+  $ci.on('change', function() {
+
+  });
+
+
+  //--------------------Panel 10 Display of rho by CIs---------------------
+
+  $displaylinetomarkrho.on('change', function() {
+    displaylinetomarkrho = $displaylinetomarkrho.is(':checked');
+  })
+
+  $showcapture.on('change', function() {
+    showcapture = $showcapture.is(':checked');
+  })
+
+
+/*-----------------------N1 nudge bars------------------------------------*/
 //#region nudge bars
   //changes to N1
   $N1val.on('change', function() {
@@ -1089,7 +1095,7 @@ $(function() {
   }
 //#endregion
 
-  /*---------------------------------------------Tooltips on or off-------------------------------------- */
+  /*---------------------Tooltips on or off-------------------------------------- */
 
   function setTooltips() {
     Tipped.setDefaultSkin('esci');

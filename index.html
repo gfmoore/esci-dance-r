@@ -29,7 +29,7 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
     <!--clear favicon cache-->
     <link rel="shortcut icon" href="./favicon.ico?v=2">  
 
-    <title>esci-correlation</title>
+    <title>esci-dance r</title>
 
     <!-- stylesheets -->
 
@@ -45,8 +45,6 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
     <script src=./js/jquery-3.5.1.min.js></script>
 
     <script src=./js/jstat.min.js></script>
-
-    <script src=./js/math.min.js></script>
 
     <script src=./js/d3.min.js></script>
 
@@ -67,7 +65,7 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
         <div id=header>
           <div id=logo><img id=logoimg src=./images/logo.png></div>
           <div id=mainheading class=headingtip data-tooltip>esci web</div>
-          <div id=subheading class=headingtip data-tooltip>dance <em>r</em> (dev)</div>
+          <div id=subheading class=headingtip data-tooltip>dance <em>r</em> (beta)</div>
           <div id=tooltipsonoff>?</div>
         </div>
         <div id=breadcrumbs><span id=homecrumb class=hometip data-tooltip>Home></span><span id=distributioncrumb data-tooltip> dance <em>r</em></span></div>
@@ -78,8 +76,6 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
             See *** <em>r</em>
           </div>
           <!-------------------------------------Tab 1 Panels------------------------------------->        
-
-
 
           <!-----------Tab 1 Panel 1 N------------------------------------------->
           <div id=N1panel>
@@ -106,24 +102,14 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
 
           </div> 
 
-
-          <!------------Panel 3 New data set------------->
-          <!-- <div id=newdatasetpanel>
-            <div class=newdatatip data-tooltip><span class=red >3 </span></div>
-            <div id=newdataset class=newdatatip data-tooltip>New Data Set</div>
-            <div class=newdatatip data-tooltip>... with correlation <em>r</em></div> -->
-
-            <!-- <div id=testdiv>Test Data<input id=test type=checkbox></div> -->
-          <!-- </div> -->
-
-          <!------------------------------------------panel 3 Controls Clear, Take Sample, Run Freely-------------------------------------------------------->
+          <!-------------Panel 3 Controls Clear, Take Sample, Run Freely-------------------------------------------------------->
           <div id=runcontrols>
             <div id=runcontrolsdiv data-tooltip><span class=red>3</span> Controls</div>
             <div id=runstop> 
               <div id=clearsample class=runbuttons data-tooltip>Clear </div>
               <div id=takesample  class=runbuttons data-tooltip>Take Sample</div>
               <div id=runfreely   class=runbuttons data-tooltip>Run Stop</div>
-              <input type="range" min="0" max="500" value="100" class="sliderspeed" id=speed data-tooltip>
+              <input type="range" min="0" max="500" value="400" class="sliderspeed" id=speed data-tooltip>
             </div>
           </div>
 
@@ -177,7 +163,7 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
 
           <div id=latestsamplesection>
             <div class=latestsampletip data-tooltip><span class=red>8</span> Latest sample </div>
-            <div class=latestsampletip data-tooltip><span class=italic>r </span><span id=latestsample>0.0</span></div>
+            <div class=latestsampledivtip data-tooltip><span class=italic>r </span><span id=latestsample class=red>.0</span></div>
           </div>
 
           <!----------------Panel 9 Latest sample Confidence Interval---------------------------------------------------------->
@@ -199,7 +185,7 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
               </div>
 
               <div id=CIforr> 
-                <span>CI on latest <span class=italic>r</span> [<span id=cifrom>0.0</span>, <span id=cito>0.0</span>]</span>
+                <span>CI on latest <span class=italic>r</span> [<span id=cifrom class=red>0.0</span>, <span id=cito class=red>0.0</span>]</span>
               </div>
 
           </div>
@@ -210,71 +196,16 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
             <div id=capturetip data-tooltip><span class=red>10</span> Capture of <span class="italic greek">&rho;</span> by CIs</div>
             <div class=displaylinetomarkrhotip data-tooltip><input id=displaylinetomarkrho   type=checkbox> Display line to mark <span class="italic greek">&rho;</span></div>
             <div class=showcapturetip data-tooltip><input id=showcapture   type=checkbox> Show capture</div>
-            <div class=nosamplestakentip data-tooltip>Number of samples taken <span id=numbersamplestaken>0</span></div>
+            <div class=nosamplestakentip data-tooltip>Number of samples taken <span id=numbersamplestaken class=red>0</span></div>
 
             <div class=numberciscapturingtip data-tooltip>
               Number of CIs capturing:
-              <div class=lowerarmtip>with lower arm <span id=lowerarm>0</span></div>
-              <div class=upperarmtip>with upper arm <span id=upperarm>0</span></div>
+              <div class=lowerarmtip>with lower arm <span id=lowerarm class=red>0</span></div>
+              <div class=upperarmtip>with upper arm <span id=upperarm class=red>0</span></div>
             </div>
-            <div class=percentCIcapturetip data-tooltip>Percent of CIs that capture <span id=percentCIcapture>0.0</span>%</div>
+            <div class=percentCIcapturetip data-tooltip>Percent of CIs that capture <span id=percentCIcapture class=red>0.0</span>%</div>
 
           </div>
-
-          <!------------Panel x Display Information Panel------------->
-          <!-- <div id=displayinfopaneldiv>
-            <div id=displayinfopaneltitle>Covariance matrix</div>
-            <div id=covmatrixpanel>
-              <div>| <span id=covxx>0</span><span id=spacer> </span><span id=covxy>0</span> |</div>
-              <div>| <span id=covyx>0</span><span id=spacer> </span><span id=covyy>0</span> |</div>
-            </div>  
-
-            <div id=displayinfopaneltitle>Eigenvalues and eigenvectors</div>
-            <div id=displayinfopanel>
-              <div >&lambda;<sub>1 </sub><span id=lambda1>0</span></div> 
-              <div>
-                <div id=eignenvector1x>|<span id=x1>1.00</span>|</div>
-                <div id=eignenvector1y>|<span id=y1>0</span>|</div>  
-              </div>
-
-              <div id=space></div><div></div>
-
-              <div >&lambda;<sub>2 </sub><span id=lambda2>0</span></div> 
-              <div>
-                <div id=eignenvector2x>|<span id=x2>1.00</span>|</div>
-                <div id=eignenvector2y>|<span id=y2>0</span>|</div>  
-              </div>
-            </div>
-          </div> -->
-
-          <!------------Panel x Load test data Panel------------->
-          <!-- <div id=loadtestdatapanel> -->
-
-            <!--------Clear and load Data ----------------------------------------->                
-            <!-- <div class=cleardatapanelwrapper>
-              <div class=cleardatapanel>
-                <div id=cleardata class=clearbutton>Clear Data?</div>
-                <div id=cleardatayes class=clearbutton>Yes</div>
-                <div id=cleardatano class=clearbutton>No</div>
-                <div id=loaddata class=loadbutton>Load Data</div>
-
-              </div>
-              <div id=datasetdiv><input id=dataset class=inputfile type=file accept=".csv"></div>
-            </div> -->
-
-            <!-- data-->
-            <!-- <div id=middlepanel class=middlepanel>   
-              <div id=data>
-
-                <input type=text id=group1label class=grouptext value=''>
-                <input type=text id=group2label class=grouptext value=''>
-              </div>
-            </div>
-            <div id=confidenceellipsediv><input id=confidenceellipse type=checkbox>90% Confidence ellipse</div>
-                <div class=grouplabels><em>X</em></div>
-                <div class=grouplabels><em>Y</em></div> -->
-
-          <!-- </div> -->
 
         </div> 
 
