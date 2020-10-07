@@ -79,10 +79,7 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
           </div>
           <!-------------------------------------Tab 1 Panels------------------------------------->        
 
-          <!--temp panel-->
-          <div id=showdances>
-            <div id=danceonofflabel><input id=danceonoff type=checkbox checked> Dance on off</div>
-          </div>
+
 
           <!-----------Tab 1 Panel 1 N------------------------------------------->
           <div id=N1panel>
@@ -111,13 +108,25 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
 
 
           <!------------Panel 3 New data set------------->
-          <div id=newdatasetpanel>
+          <!-- <div id=newdatasetpanel>
             <div class=newdatatip data-tooltip><span class=red >3 </span></div>
             <div id=newdataset class=newdatatip data-tooltip>New Data Set</div>
-            <div class=newdatatip data-tooltip>... with correlation <em>r</em></div>
+            <div class=newdatatip data-tooltip>... with correlation <em>r</em></div> -->
 
             <!-- <div id=testdiv>Test Data<input id=test type=checkbox></div> -->
+          <!-- </div> -->
+
+          <!------------------------------------------panel 3 Controls Clear, Take Sample, Run Freely-------------------------------------------------------->
+          <div id=runcontrols>
+            <div id=runcontrolsdiv data-tooltip><span class=red>3</span> Controls</div>
+            <div id=runstop> 
+              <div id=clearsample class=runbuttons data-tooltip>Clear </div>
+              <div id=takesample  class=runbuttons data-tooltip>Take Sample</div>
+              <div id=runfreely   class=runbuttons data-tooltip>Run Stop</div>
+              <input type="range" min="0" max="500" value="100" class="sliderspeed" id=speed data-tooltip>
+            </div>
           </div>
+
 
           <!------------Panel 4 Display features------------->
           <div id=displayfeaturespanel>
@@ -159,6 +168,58 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
             </div>
           </div> 
 
+          <!----------------Panel 7 dance of r-values ---------------------------------------------------------->
+          <div id=rvaluesection>
+              <div class=dancertip data-tooltip><span class=red>7</span> Dance of the <span class=italic>r</span> values <input type=checkbox id=danceonoff checked></div>
+          </div>
+
+          <!----------------Panel 8 Latest sample ---------------------------------------------------------->
+
+          <div id=latestsamplesection>
+            <div class=latestsampletip data-tooltip><span class=red>8</span> Latest sample </div>
+            <div class=latestsampletip data-tooltip><span class=italic>r </span><span id=latestsample>0.0</span></div>
+          </div>
+
+          <!----------------Panel 9 Latest sample Confidence Interval---------------------------------------------------------->
+
+          <div id=CIsection>
+            <div class=citip data-tooltip><span class=red>9 </span>Confidence Intervals </div>
+              <div id=cipcntdiv class=cipcnttip data-tooltip><span>CI%  <span class=italic>C</span></span>
+                <select id=CI class=copcnttip data-tooltip>
+                  <option value=0.5>50%</option>
+                  <option value=0.32>68%</option>
+                  <option value=0.2>80%</option>
+                  <option value=0.1>90%</option>
+                  <option value=0.05 selected>95%</option>
+                  <option value=0.02>98%</option>
+                  <option value=0.01>99%</option>
+                  <option value=0.002>99.8%</option>
+                  <option value=0.001>99.9%</option>
+                </select>
+              </div>
+
+              <div id=CIforr> 
+                <span>CI on latest <span class=italic>r</span> [<span id=cifrom>0.0</span>, <span id=cito>0.0</span>]</span>
+              </div>
+
+          </div>
+
+          <!----------------Panel 10 Capture of rho by CIs---------------------------------------------------------->
+
+          <div id=capturesection>
+            <div id=capturetip data-tooltip><span class=red>10</span> Capture of <span class="italic greek">&rho;</span> by CIs</div>
+            <div class=displaylinetomarkrhotip data-tooltip><input id=displaylinetomarkrho   type=checkbox> Display line to mark <span class="italic greek">&rho;</span></div>
+            <div class=showcapturetip data-tooltip><input id=showcapture   type=checkbox> Show capture</div>
+            <div class=nosamplestakentip data-tooltip>Number of samples taken <span id=numbersamplestaken>0</span></div>
+
+            <div class=numberciscapturingtip data-tooltip>
+              Number of CIs capturing:
+              <div class=lowerarmtip>with lower arm <span id=lowerarm>0</span></div>
+              <div class=upperarmtip>with upper arm <span id=upperarm>0</span></div>
+            </div>
+            <div class=percentCIcapturetip data-tooltip>Percent of CIs that capture <span id=percentCIcapture>0.0</span>%</div>
+
+          </div>
 
           <!------------Panel x Display Information Panel------------->
           <!-- <div id=displayinfopaneldiv>
