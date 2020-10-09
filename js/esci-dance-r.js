@@ -13,11 +13,12 @@ Licence       GNU General Public Licence Version 3, 29 June 2007
 0.0.3   09 Oct 2020 #3 Speed control adjustment
 0.0.4   09 Oct 2020 #4 Resize displays and font sizes positions
 0.0.5   09 Oct 2020    Add background image of scatter population.
+0.0.6   09 Oct 2020 #? Removed three lines from panel 10
 
 */
 //#endregion 
 
-let version = '0.0.5';
+let version = '0.0.6';
 
 'use strict';
 $(function() {
