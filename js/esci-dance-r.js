@@ -12,11 +12,12 @@ Licence       GNU General Public Licence Version 3, 29 June 2007
 0.0.2   09 Oct 2020 #2 Adjusted control panel as required
 0.0.3   09 Oct 2020 #3 Speed control adjustment
 0.0.4   09 Oct 2020 #4 Resize displays and font sizes positions
+0.0.5   09 Oct 2020    Add background image of scatter population.
 
 */
 //#endregion 
 
-let version = '0.0.4';
+let version = '0.0.5';
 
 'use strict';
 $(function() {
@@ -122,6 +123,11 @@ $(function() {
   let xscatters = [];
   let yscatters = [];
   let scattersarray = [];
+
+  let backgroundN = 5000;
+  let backgroundscatters = [];
+  let xbscatters = [];
+  let ybscatters = [];
 
   let scatterSize = 3;
 
@@ -255,6 +261,8 @@ $(function() {
     setupSliders();
     setTooltips();
 
+
+
     clear();
     takeSample();
   }
@@ -339,6 +347,9 @@ $(function() {
   function updater() {
     if (!sliderinuse) $rslider.update({ from: rs })
     sliderinuse = false;
+
+    backgroundScatters();
+    displayBackgroundScatters();
   }
 
 
@@ -365,17 +376,24 @@ $(function() {
     speed = parseInt($speed.val());
 
     setDisplaySize();
-    setupAxes();
+    setupAxes();    
+
+    backgroundScatters();
+    displayBackgroundScatters();
   }
 
   function resize() {
     setDisplaySize();
     setupAxes();
 
+    displayBackgroundScatters();
+    
     //don't recreate scatters here
     drawScatterGraph();
     statistics();
     displayStatistics();
+
+
   }
 
   function setDisplaySize() {
@@ -612,12 +630,6 @@ $(function() {
     d3.selectAll('.marginals').remove();
     d3.selectAll('.confidenceellipse').remove();
 
-    //test scatters at corners
-    // svgS.append('circle').attr('class', 'scatters').attr('cx', x(-3)).attr('cy', y(-3)).attr('r', scatterSize).attr('stroke', 'red').attr('stroke-width', 2).attr('fill', 'red');      
-    // svgS.append('circle').attr('class', 'scatters').attr('cx', x(-3)).attr('cy', y(3)).attr('r', scatterSize).attr('stroke', 'red').attr('stroke-width', 2).attr('fill', 'red');      
-    // svgS.append('circle').attr('class', 'scatters').attr('cx', x(3)).attr('cy', y(-3)).attr('r', scatterSize).attr('stroke', 'red').attr('stroke-width', 2).attr('fill', 'red');      
-    // svgS.append('circle').attr('class', 'scatters').attr('cx', x(3)).attr('cy', y(3)).attr('r', scatterSize).attr('stroke', 'red').attr('stroke-width', 2).attr('fill', 'red');      
-
     //display scatters
     for (i = 0; i < scatters.length; i += 1) {
       if      (scatters[i].x < -3)  svgS.append('circle').attr('class', 'scatters').attr('cx', x(-3.05)).attr('cy', y(scatters[i].y)).attr('r', scatterSize).attr('stroke', 'red').attr('stroke-width', 2).attr('fill', 'red');      
@@ -626,19 +638,6 @@ $(function() {
       else if (scatters[i].y > 3)   svgS.append('circle').attr('class', 'scatters').attr('cx', x(scatters[i].x)).attr('cy', y(3.05)).attr('r', scatterSize).attr('stroke', 'red').attr('stroke-width', 2).attr('fill', 'red'); 
       else  /*normal*/              svgS.append('circle').attr('class', 'scatters').attr('cx', x(scatters[i].x)).attr('cy', y(scatters[i].y)).attr('r', scatterSize).attr('stroke', 'blue').attr('stroke-width', 2).attr('fill', 'blue');
     }
-
-    //display marginals
-    // if (displaymd) {
-    //   for (i = 0; i < scatters.length; i += 1) {
-    //     if      (scatters[i].y < -3) svgS.append('circle').attr('class', 'scatters').attr('cx', x(-2.95)).attr('cy', y(-3.05)).attr('r', scatterSize).attr('stroke', 'black').attr('stroke-width', 1).attr('fill', 'black');
-    //     else if (scatters[i].y > 3)  svgS.append('circle').attr('class', 'scatters').attr('cx', x(-2.95)).attr('cy', y(3.05)).attr('r', scatterSize).attr('stroke', 'black').attr('stroke-width', 1).attr('fill', 'black');
-    //     else                         svgS.append('circle').attr('class', 'scatters').attr('cx', x(-2.95)).attr('cy', y(scatters[i].y)).attr('r', scatterSize).attr('stroke', 'black').attr('stroke-width', 1).attr('fill', 'none');
- 
-    //     if      (scatters[i].x < -3) svgS.append('circle').attr('class', 'scatters').attr('cx', x(-3.05)).attr('cy', y(-2.95)).attr('r', scatterSize).attr('stroke', 'black').attr('stroke-width', 1).attr('fill', 'black');
-    //     else if (scatters[i].x > 3)  svgS.append('circle').attr('class', 'scatters').attr('cx', x(3.05)).attr('cy', y(-2.95)).attr('r', scatterSize).attr('stroke', 'black').attr('stroke-width', 1).attr('fill', 'black');
-    //     else                         svgS.append('circle').attr('class', 'scatters').attr('cx', x(scatters[i].x)).attr('cy', y(-2.95)).attr('r', scatterSize).attr('stroke', 'black').attr('stroke-width', 1).attr('fill', 'none');
-    //   }
-    // }
   }
 
   function statistics() {
@@ -743,6 +742,38 @@ $(function() {
       svgS.append('line').attr('class', 'regression').attr('x1', x(-3) ).attr('y1', y(yvaluecl1) ).attr('x2', x(3) ).attr('y2', y(yvaluecl2) ).attr('stroke', 'black').attr('stroke-width', 1).attr('clip-path', 'url(#mask)');
     }
     
+  }
+
+  function backgroundScatters() {
+    xbscatters = [];
+    ybscatters = [];
+    for (i = 0; i < backgroundN; i += 1) {
+      xs = jStat.normal.sample( 0, 1 );
+      ys = jStat.normal.sample( 0, 1 );
+      xbscatters.push(xs);
+      ybscatters.push(ys);
+    }
+
+    backgroundscatters = [];
+    for (i = 0; i < backgroundN; i += 1) {
+      xs = xbscatters[i]
+      ys = (rs * xbscatters[i]) + (Math.sqrt(1 - rs*rs) * ybscatters[i]);
+      backgroundscatters.push( {x: xs, y: ys} );
+    }
+
+  }
+
+  function displayBackgroundScatters() {
+    d3.selectAll('.backgroundscatters').remove();
+
+    for (i = 0; i < backgroundN; i += 1) {
+      if      (backgroundscatters[i].x < -3)  svgS.append('circle').attr('class', 'backgroundscatters').attr('cx', x(-3.05)).attr('cy', y(backgroundscatters[i].y)).attr('r', scatterSize).attr('stroke', 'white').attr('stroke-width', 2).attr('fill', 'white');      
+      else if (backgroundscatters[i].x > 3)   svgS.append('circle').attr('class', 'backgroundscatters').attr('cx', x(3.05)).attr('cy', y(backgroundscatters[i].y)).attr('r', scatterSize).attr('stroke', 'white').attr('stroke-width', 2).attr('fill', 'white'); 
+      else if (backgroundscatters[i].y < -3)  svgS.append('circle').attr('class', 'backgroundscatters').attr('cx', x(backgroundscatters[i].x)).attr('cy', y(-3.05)).attr('r', scatterSize).attr('stroke', 'white').attr('stroke-width', 2).attr('fill', 'white'); 
+      else if (backgroundscatters[i].y > 3)   svgS.append('circle').attr('class', 'backgroundscatters').attr('cx', x(backgroundscatters[i].x)).attr('cy', y(3.05)).attr('r', scatterSize).attr('stroke', 'white').attr('stroke-width', 2).attr('fill', 'white'); 
+      else  /*normal*/              svgS.append('circle').attr('class', 'backgroundscatters').attr('cx', x(backgroundscatters[i].x)).attr('cy', y(backgroundscatters[i].y)).attr('r', scatterSize).attr('stroke', '#DEDEDE').attr('stroke-width', 1).attr('fill', 'white');
+    }
+
   }
 
 
@@ -913,8 +944,13 @@ $(function() {
     danceonoff = $danceonoff.is(':checked');
     setDisplaySize();
     setupAxes();
+
+    displayBackgroundScatters();
+
     drawScatterGraph();
     displayStatistics();
+
+
     if (danceonoff) {
       $displayD.show();
 
