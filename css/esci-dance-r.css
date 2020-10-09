@@ -11,6 +11,7 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
 0.0.1   Initial version
 0.0.2   09 Oct 2020 #2 Adjusted control panel as required
 0.0.3   09 Oct 2020 #3 Speed control adjustment
+0.0.4  
 
 #endregion */
 
@@ -461,26 +462,25 @@ input[type="range"]::-webkit-slider-thumb{  /*might not work with some browsers*
 /*----------------------------------Right panel-----------------------------------------*/
 #rightpanel {
   border: 1px solid grey;
-  /* display: grid;
-  grid-template-rows: 1fr 1fr; */
   grid-row-gap: 1rem;
-  padding-top: 1rem;
+  padding-top: 0.5rem;
+}
+
+#scrolldisplays {
+  position: sticky; /*keeps div at top when vertical scrolling */
+  top: 0;  
 }
 
 
 #displayS {
   border: 1px solid grey;
   background-color: white;
-  margin-left: 2rem;
-  position: sticky; /*keeps div at top when vertical scrolling*/
-  top: 0;
 }
 
 #displayD {
   border: 1px solid grey;
   background-color: white;
-  margin-left: 2rem;
-  margin-top: 1rem;
-  position: sticky; /*keeps div at top when vertical scrolling*/
-  top: 0;
+  margin-left: 0.1rem;
+  margin-top: 0.2rem;
+
 }

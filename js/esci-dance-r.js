@@ -11,11 +11,12 @@ Licence       GNU General Public Licence Version 3, 29 June 2007
 0.0.1   Initial version
 0.0.2   09 Oct 2020 #2 Adjusted control panel as required
 0.0.3   09 Oct 2020 #3 Speed control adjustment
+0.0.4   09 Oct 2020 #4 Resize displays and font sizes positions
 
 */
 //#endregion 
 
-let version = '0.0.3';
+let version = '0.0.4';
 
 'use strict';
 $(function() {
@@ -36,7 +37,7 @@ $(function() {
   let rheight;                                                                //the height returned by resize
 
   const $danceonoff = $('#danceonoff');
-  let danceonoff = true;
+  let danceonoff = false;
 
   let pauseId;
   let repeatId;
@@ -237,16 +238,18 @@ $(function() {
   function initialise() {
     
     //show dance panels
-    // $displayD.hide();
-    // $latestsamplesection.hide();
-    // $CIsection.hide();
-    // $capturesection.hide();
+    $displayD.hide();
+    $latestsamplesection.hide();
+    $CIsection.hide();
+    $capturesection.hide();
   
     //get initial dimensions of #display div
-    margin = {top: 30, right: 50, bottom: 20, left: 50}; 
+    //margin = {top: 30, right: 50, bottom: 20, left: 50}; 
+    margin = {top: 15, right: 15, bottom: 0, left: 15};
 
     rheight = $('#main').outerHeight(true);
-    rwidth  = $('#main').outerWidth(true)  - $('#leftpanel').outerWidth(true); 
+    //rwidth  = $('#main').outerWidth(true)  -  $('#leftpanel').outerWidth(true); 
+    rwidth  = $('html').outerWidth(true)  -  $('#leftpanel').outerWidth(true); 
 
     setDisplaySize();
     setupSliders();
@@ -381,31 +384,45 @@ $(function() {
     $('svg').remove();  
 
     rheight = $('#main').outerHeight(true);
-    rwidth  = $('#main').outerWidth(true)  - $('#leftpanel').outerWidth(true);
+    //rwidth  = $('#main').outerWidth(true)  - $('#leftpanel').outerWidth(true);
+    rwidth  = $('html').outerWidth(true)  - $('#leftpanel').outerWidth(true);
 
     if (danceonoff) {
-      widthS   = (rwidth - margin.left - margin.right)/2;  
+      widthS   = (rwidth - margin.left - margin.right);  
       heightS  = (rheight - margin.top - margin.bottom)/2;
 
-      widthD   = rwidth - margin.left - margin.right;  
-      heightD  = (rheight - margin.top - margin.bottom)/2;
+      widthD = widthS;
 
+      if (heightS > widthS) {
+        heightS = widthS;
+      }
+      else {
+        widthS = heightS;
+      }
+
+      heightD = heightS;
+      
       scatterSize = 1.5;
     }
     else {
       widthS   = (rwidth - margin.left - margin.right);  
       heightS  = (rheight - margin.top - margin.bottom);
 
-      //probably don't need this as not shown
       widthD   = rwidth - margin.left - margin.right;  
       heightD  = (rheight - margin.top - margin.bottom);
 
+      //try to keep scatters grid square
+      if (widthS > heightS) {
+        widthS = heightS;
+      }
+      else {
+        heightS = widthS;
+      }
+
       scatterSize = 3;
     }
-    //try to keep scatters grid square
-    if (widthS > heightS) widthS = heightS;
-    else 
-    if (widthS < heightS) heightS = widthS;
+
+    //if (widthS < heightS) 
 
   
     //change #display scatters
@@ -440,23 +457,25 @@ $(function() {
     ry = d3.scaleLinear().domain([0, 100]).range([20, heightD - 20]);
 
     let xAxis = d3.axisBottom(x).tickPadding([10]).ticks(7).tickFormat(d3.format('')); //.ticks(20); //.tickValues([]);
-    svgS.append('g').attr('class', 'xaxis').style("font", "1.0rem sans-serif").style('padding-top', '0.5rem').attr( 'transform', `translate(0, ${heightS-35})` ).call(xAxis);
+    svgS.append('g').attr('class', 'xaxis').style("font", "1.3rem sans-serif").style('padding-top', '0.5rem').attr( 'transform', `translate(0, ${heightS-35})` ).call(xAxis);
 
     let yAxis = d3.axisLeft(y).tickPadding([10]).ticks(7).tickFormat(d3.format('')); //.ticks(20); //.tickValues([]);
-    svgS.append('g').attr('class', 'yaxis').style("font", "1.0rem sans-serif").attr( 'transform', `translate(${35}, 0)` ).call(yAxis);
+    svgS.append('g').attr('class', 'yaxis').style("font", "1.3rem sans-serif").attr( 'transform', `translate(${35}, 0)` ).call(yAxis);
 
     //r display
     let rAxisTop = d3.axisBottom(rx).tickPadding([10]).ticks(7).tickFormat(d3.format('')); //.ticks(20); //.tickValues([]);
-    svgD.append('g').attr('class', 'raxis').style("font", "1.0rem sans-serif").attr( 'transform', `translate(${0}, ${heightD - 40})` ).call(rAxisTop);
+    svgD.append('g').attr('class', 'raxis').style("font", "1.3rem sans-serif").attr( 'transform', `translate(${0}, ${heightD - 40})` ).call(rAxisTop);
     let rAxisBottom = d3.axisTop(rx).tickPadding([10]).ticks(7).tickFormat(d3.format('')); //.ticks(20); //.tickValues([]);
-    svgD.append('g').attr('class', 'raxis').style("font", "1.0rem sans-serif").attr( 'transform', `translate(${0}, 40)` ).call(rAxisBottom);
+    svgD.append('g').attr('class', 'raxis').style("font", "1.3rem sans-serif").attr( 'transform', `translate(${0}, 40)` ).call(rAxisBottom);
 
 
     //add some axis labels
-    svgS.append('text').text('X').attr('class', 'axistext').attr('x', x(0) + 20).attr('y', y(-3.0) + 30).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.0rem').style('font-weight', 'bold').style('font-style', 'italic');
-    svgS.append('text').text('Y').attr('class', 'axistext').attr('x', x(-3.0) - 20).attr('y', y(0.0) - 30).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.0rem').style('font-weight', 'bold').style('font-style', 'italic');
+    svgS.append('text').text('X').attr('class', 'axistext').attr('x', x(0) + 10).attr('y', y(-3.0) + 30).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.4rem').style('font-weight', 'bold').style('font-style', 'italic');
+    svgS.append('text').text('Y').attr('class', 'axistext').attr('x', x(-3.0) - 30).attr('y', y(0.0) - 10).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.4rem').style('font-weight', 'bold').style('font-style', 'italic');
 
-    svgD.append('text').text('Correlation').attr('class', 'axistext').attr('x', rx(-1) - 15).attr('y', ry(0)-10 ).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.0rem').style('font-weight', 'bold').style('font-style', 'italic');
+    svgD.append('text').text('Correlation').attr('class', 'axistext').attr('x', rx(-1) - 15).attr('y', ry(0)-10 ).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.3rem').style('font-weight', 'bold');
+    svgD.append('text').text('r').attr('class', 'axistext').attr('x', rx(0) - 20).attr('y', ry(0) - 5 ).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.3rem').style('font-weight', 'bold').style('font-style', 'italic');
+    svgD.append('text').text('r').attr('class', 'axistext').attr('x', rx(0) - 20).attr('y', ry(100) + 15 ).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.3rem').style('font-weight', 'bold').style('font-style', 'italic');
 
 
     //add additional ticks for x scale

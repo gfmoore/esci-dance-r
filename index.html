@@ -10,6 +10,7 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
 0.0.1   Initial version
 0.0.2   09 Oct 2020 #2 Adjusted control panel as required
 0.0.3   09 Oct 2020 #3 Speed control adjustment
+0.0.4   09 Oct 2020 #4 Resize displays and font sizes positions
 
 -->
 <!--endregion -->
@@ -164,7 +165,7 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
 
           <!----------------Panel 7 dance of r-values ---------------------------------------------------------->
           <div id=rvaluesection>
-              <div class=dancertip data-tooltip><span class=red>7</span> Dance of the <span class=italic>r</span> values <input type=checkbox id=danceonoff checked></div>
+              <div class=dancertip data-tooltip><span class=red>7</span> Dance of the <span class=italic>r</span> values <input type=checkbox id=danceonoff></div>
           </div>
 
           <!----------------Panel 8 Latest sample ---------------------------------------------------------->
@@ -228,9 +229,11 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
 
 <!-------------------------------------Right panel---------------------------------------------->
  
-      <div id=rightpanel>     
-        <div id=displayS></div>  <!--scatters-->
-        <div id=displayD></div>  <!--dance-->
+      <div id=rightpanel>    
+        <div id=scrolldisplays> 
+          <div id=displayS></div>  <!--scatters-->
+          <div id=displayD></div>  <!--dance-->
+        </div>
       </div>
 
 
