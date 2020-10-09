@@ -9,12 +9,13 @@ Licence       GNU General Public Licence Version 3, 29 June 2007
 // #region Version history
 /*
 0.0.1   Initial version
-0.0.2   #2 Adjusted control panel as required
+0.0.2   09 Oct 2020 #2 Adjusted control panel as required
+0.0.3   09 Oct 2020 #3 Speed control adjustment
 
 */
 //#endregion 
 
-let version = '0.0.2';
+let version = '0.0.3';
 
 'use strict';
 $(function() {
