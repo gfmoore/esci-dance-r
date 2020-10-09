@@ -8,6 +8,7 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
 <!-- #region version history-->
 <!--
 0.0.1   Initial version
+0.0.2   #2 Adjusted control panel as required
 
 
 -->
@@ -79,24 +80,31 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
 
           <!-----------Tab 1 Panel 1 N------------------------------------------->
           <div id=N1panel>
-            <div id=N1paneltip data-tooltip><span class=red >1 </span><em>N</em></div>
+            <div id=N1paneltip data-tooltip><sapn class=red >1 </span></div>
+              
             <div id=N1sliderpanel data-tooltip>
               <div id=N1sliderdiv><input id=N1slider type=text/></div>
               <div><img id=N1nudgebackward class="icons slidericons" src=./images/left.png alt='nudge backwards'></div>
               <div><img id=N1nudgeforward class="icons slidericons" src=./images/right.png alt='nudge forward'></div>
-              <input id=N1val type=text>
+              <div>
+                <div id=Nlabel><em>N</em></div>
+                <input id=N1val type=text>
+              </div>
             </div>
 
           </div>
 
           <!------------Panel 2 Generate dataset with chosen r------------->
           <div id=rpanel>
-            <div id=rpaneltip data-tooltip><span class=red >2 </span><input id=chosenr type=radio name=getdata checked=checked> Data set correlation <em>r</em></div>
+            <div id=rpaneltip data-tooltip><span class=red >2 </span> Set population correlation  <em>&rho;</em>, see sample correlation <em>r</em></div>
             <div id=rsliderpanel data-tooltip>
               <div id=rsliderdiv><input id=rslider type=text/></div>
               <div><img id=rnudgebackward class="icons slidericons" src=./images/left.png alt='nudge backwards'></div>
               <div><img id=rnudgeforward class="icons slidericons" src=./images/right.png alt='nudge forward'></div>
-              <input id=rval type=text>
+              <div>
+                <div id=rholabel><em>&rho;</em></div>
+                <input id=rval type=text>
+              </div>
             </div>
             <div id=calculatedrdiv data-tooltip><em>r</em> of data set <span id=calculatedr class=red>0.5</span></div>
 
@@ -104,12 +112,12 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
 
           <!-------------Panel 3 Controls Clear, Take Sample, Run Freely-------------------------------------------------------->
           <div id=runcontrols>
-            <div id=runcontrolsdiv data-tooltip><span class=red>3</span> Controls</div>
+            <div id=runcontrolsdiv data-tooltip><span class=red>3 </span></div>
             <div id=runstop> 
               <div id=clearsample class=runbuttons data-tooltip>Clear </div>
               <div id=takesample  class=runbuttons data-tooltip>Take Sample</div>
               <div id=runfreely   class=runbuttons data-tooltip>Run Stop</div>
-              <input type="range" min="0" max="500" value="400" class="sliderspeed" id=speed data-tooltip>
+              <input type="range" min="0" max="1000" value="900" class="sliderspeed" id=speed data-tooltip>
             </div>
           </div>
 
@@ -117,21 +125,21 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
           <!------------Panel 4 Display features------------->
           <div id=displayfeaturespanel>
             <div id=displaytip data-tooltip><span class=red>4</span> Display</div>
-            <div class=rtip data-tooltip><input id=displayr   type=checkbox> Value of <em>r</em> in the figure</div>
-            <div class=ctmtip data-tooltip><input id=displayctm type=checkbox> Cross through means</div>
-            <!-- <div class=mdtip data-tooltip><input id=displaymd  type=checkbox> Marginal distributions</div> -->
+            <div>
+              <div class=rtip data-tooltip><input id=displayr   type=checkbox> Value of <em>r</em> in the figure</div>
+              <div class=ctmtip data-tooltip><input id=displayctm type=checkbox> Cross through means</div>
+            </div>
           </div>
 
 
           <!------------Panel 5 Descriptive statistics------------->
           <div id=displaystatistics1spanel>
-            <div id=descstatstip data-tooltip><span class=red>5</span> Descriptive statistics <input id=statistics1show type=checkbox></div>
-
-            <div id=statistics1>
-              <div></div>
+            <div id=descstatlabels>
+              <div id=descstatstip data-tooltip><span class=red>5</span> Descriptive statistics <input id=statistics1show type=checkbox></div>
               <div id=labelx><em>X</em></div>
               <div id=labely><em>Y</em></div>
-
+            </div>
+            <div id=statistics1>
               <div class=statslabel>Mean</div>
               <div id=m1 class='red pushright'>0</div>
               <div id=m2 class='red pushright'>0</div>
@@ -148,9 +156,9 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
             <div id=displaylinestip data-tooltip><span class=red>6</span> Display lines <input id=displaylines1show type=checkbox></div>
             
             <div id=displaylines1>
-              <div><input id=corryx  class=yxtip data-tooltip type=checkbox> <span  data-tooltip class='blue yxtip'><em>Y</em> against <em>X</em></span> <span id=corryxvallabel class=slopeyxtip data-tooltip >Slope</span> <span id=corryxval class=slopeyxtip data-tooltip class=red>0.0</span></div>
-              <div><input id=corrxy  class=xytip data-tooltip type=checkbox> <span  data-tooltip class='red xytip'><em>X</em> against <em>Y</em></span> <span id=corrxyvallabel class=slopexytip data-tooltip>Slope</span>        <span id=corrxyval class=slopexytip data-tooltip class=red>0.0</span></div>
-              <div><input id=corrlineslope class=cltip data-tooltip type=checkbox> <span data-tooltip class='black cltip'>Correlation line</span>       <span id=corrlineslopevallabel class=slopecltip data-tooltip>Slope</span> <span id=corrlineslopeval class=slopecltip data-tooltip class=red>0.0</span></div>
+              <div><input id=corryx  class=yxtip data-tooltip type=checkbox> <span  data-tooltip class='blue yxtip'><em>Y</em> against <em>X</em></span> <span id=corryxvallabel class=slopeyxtip data-tooltip >Slope</span> <span id=corryxval class='slopeyxtip red' data-tooltip>0.0</span></div>
+              <div><input id=corrxy  class=xytip data-tooltip type=checkbox> <span  data-tooltip class='red xytip'><em>X</em> against <em>Y</em></span> <span id=corrxyvallabel class=slopexytip data-tooltip>Slope</span>        <span id=corrxyval class='slopexytip red' data-tooltip>0.0</span></div>
+              <div><input id=corrlineslope class=cltip data-tooltip type=checkbox> <span data-tooltip class='black cltip'>Correlation line</span>       <span id=corrlineslopevallabel class=slopecltip data-tooltip>Slope</span> <span id=corrlineslopeval class='slopecltip red' data-tooltip>0.0</span></div>
             </div>
           </div> 
 
@@ -169,8 +177,10 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
           <!----------------Panel 9 Latest sample Confidence Interval---------------------------------------------------------->
 
           <div id=CIsection>
-            <div class=citip data-tooltip><span class=red>9 </span>Confidence Intervals </div>
-              <div id=cipcntdiv class=cipcnttip data-tooltip><span>CI%  <span class=italic>C</span></span>
+            <div class=citip data-tooltip><span class=red>9 </span>Display CIs <input type=checkbox id=displayCIs> </div>
+            <div id=cipcntdiv class=cipcnttip data-tooltip>
+              <div><span>CI%  <em>C</em></span></div>
+              <div>
                 <select id=CI class=copcnttip data-tooltip>
                   <option value=0.5>50%</option>
                   <option value=0.32>68%</option>
@@ -183,18 +193,18 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
                   <option value=0.001>99.9%</option>
                 </select>
               </div>
-
               <div id=CIforr> 
-                <span>CI on latest <span class=italic>r</span> [<span id=cifrom class=red>0.0</span>, <span id=cito class=red>0.0</span>]</span>
+                <span> CI on latest <span class=italic>r</span> [<span id=cifrom class=red>.0</span>, <span id=cito class=red>.0</span>]</span>
               </div>
+            </div>
 
           </div>
 
           <!----------------Panel 10 Capture of rho by CIs---------------------------------------------------------->
 
           <div id=capturesection>
-            <div id=capturetip data-tooltip><span class=red>10</span> Capture of <span class="italic greek">&rho;</span> by CIs</div>
-            <div class=displaylinetomarkrhotip data-tooltip><input id=displaylinetomarkrho   type=checkbox> Display line to mark <span class="italic greek">&rho;</span></div>
+            <div id=capturetip data-tooltip></div>
+            <div class=displaylinetomarkrhotip data-tooltip><span class=red>10</span><input id=displaylinetomarkrho   type=checkbox> Display line to mark <span class="italic greek">&rho;</span></div>
             <div class=showcapturetip data-tooltip><input id=showcapture   type=checkbox> Show capture</div>
             <div class=nosamplestakentip data-tooltip>Number of samples taken <span id=numbersamplestaken class=red>0</span></div>
 

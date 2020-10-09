@@ -9,7 +9,7 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
 /* #region Version history
 
 0.0.1   Initial version
-
+0.0.2   #2 Adjusted control panel as required
 
 #endregion */
 
@@ -92,18 +92,25 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
   border: 1px solid black;
   background-color: #FFFF99;
   padding: 0.5rem;
+  display: grid;
+  grid-template-columns: 1rem auto;
 }
 
 #N1sliderpanel {
   display: grid;
   grid-template-columns: 25rem 2rem 3rem 5rem;
   grid-row-gap: 3rem;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
   margin-bottom: 1rem;
 }
 
+#Nlabel {
+  margin-left: 0.5rem;
+  height: 0.1rem;
+}
+
 #N1val {
-  margin-top: 3.0rem;
+  margin-top: 2.5rem;
   height: 2rem;
   width: 4rem;
 }
@@ -122,14 +129,19 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
   margin-top: 1rem;
 }
 
+#rholabel {
+  margin-left: 1.0rem;
+  height: 0.1rem;
+}
+
 #rval {
-  margin-top: 3.0rem;
+  margin-top: 2.5rem;
   height: 2rem;
   width: 4rem;
 }
 
 #calculatedrdiv {
-  margin: 0.5rem;
+  margin-left: 0.5rem;
   padding-left: 20.5rem;
 }
 
@@ -140,7 +152,9 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
   border: 1px solid black;
   background-color: white; /* aliceblue; */
   padding: 0.3rem;
-  padding-bottom: 1.0rem;
+  padding-bottom: 0.5rem;
+  display: grid;
+  grid-template-columns: 1.5rem auto;
 }
 
 #runstop {
@@ -201,7 +215,23 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
 }
 
 #speed {  /*reverse the slider so that min speed on left i.e. slower*/
-  direction: rtl
+  direction: rtl;
+  appearance: none;
+  background-color: blue;
+  margin-top: 2rem;
+  height: 0.3rem;
+  width: 12rem;
+  user-select: none;
+  border: none;
+  outline-color: transparent;
+}
+
+input[type="range"]::-webkit-slider-thumb{  /*might not work with some browsers*/
+  appearance:none;  
+  background-color: grey;
+  height: 1.5rem;
+  width: 1.5rem;
+  border-radius: 1.5rem;
 }
 
 
@@ -210,10 +240,12 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
   border: 1px solid black;
   background-color: #CCFFFF;
   padding: 0.5rem;
+  display: grid;
+  grid-template-columns: 8rem auto;
 }
 
 #displayr {
-  margin-top: 1.0rem;
+  margin-top: 0.2rem;
 }
 
 #displayctm {
@@ -232,11 +264,17 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
   padding: 0.5rem;
 }
 
+#descstatlabels {
+  display: grid;
+  grid-template-columns: 20.5rem 3rem 3rem;
+}
+
 #statistics1 {
-  margin-top: 1rem;
+  margin-top: 0.2rem;
   display: grid;
   grid-template-columns: 10rem 3rem 6rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.0rem;
+  padding-left: 10rem;
 }
 
 .statslabel {
@@ -265,8 +303,8 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
 }
 
 #displaylines1{
-  margin-top: 1rem;
-  margin-bottom: 1rem;
+  margin-top: 0.2rem;
+  margin-bottom: 0.2rem;
 }
 
 #corryxvallabel {
@@ -327,6 +365,8 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
   border: 1px solid black;
   background-color: #ffcc99;
   padding: 0.5rem;
+  display: grid;
+  grid-template-columns: 15rem auto;
 }
 
 .latestsampledivtip {
@@ -336,6 +376,11 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
 
 /*---------------------------------------Tab 1 panel 9 CI Section------------------------------------------------------------------*/
 
+#cipcntdiv {
+  display: grid;
+  grid-template-columns: 5.5rem 6rem auto;
+}
+
 #CIsection {
   border: 1px solid black;
   background-color: #b4c7e7;
@@ -344,7 +389,7 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
 
 #CIcontrol {
   display: grid;
-  grid-template-columns: 6rem 9rem 7rem auto;
+  grid-template-columns: 6rem 9rem 15rem;
 }
 
 #CIIntervalText {
@@ -357,11 +402,11 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
 
 #cipcntdiv {
   margin-left: 0.5rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.2rem;
 }
 
 #CIforr {
-  margin-left: 0.5rem;
+  padding-left: 3.5rem;
 }
 
 /*----------------------------------Tab 1 panel 10 Capture Section------------------------------------------------------------------*/
@@ -370,6 +415,10 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
   border: 1px solid black;
   background-color: #ccffcc;
   padding: 0.3rem;
+}
+
+#showcapture {
+  margin-left: 2.3rem;
 }
 
 #capturetip {
@@ -389,11 +438,11 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
 }
 
 .lowerarmtip {
-  margin-left: 0.5rem;
+  margin-left: 2.5rem;
 }
 
 .upperarmtip {
-  margin-left: 0.5rem;
+  margin-left: 2.5rem;
 }
 
 .percentCIcapturetip {

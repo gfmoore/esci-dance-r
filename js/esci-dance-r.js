@@ -9,12 +9,12 @@ Licence       GNU General Public Licence Version 3, 29 June 2007
 // #region Version history
 /*
 0.0.1   Initial version
-
+0.0.2   #2 Adjusted control panel as required
 
 */
 //#endregion 
 
-let version = '0.0.1';
+let version = '0.0.2';
 
 'use strict';
 $(function() {
@@ -80,6 +80,8 @@ $(function() {
   let displaymd = false;
 
   //tab 1 panel 5 Descriptive statstics
+  const $labelx = $('#labelx');
+  const $labely = $('#labely');
   const $statistics1 = $('#statistics1');
   const $statistics1show = $('#statistics1show');
   let statistics1show = false;
@@ -107,11 +109,6 @@ $(function() {
 
   const $corrlineslopeval = $('#corrlineslopeval');
   let corrlineslopeval;
-
-  const $confidenceellipsediv = $('#confidenceellipsediv');
-
-  const $confidenceellipse = $('#confidenceellipse');
-  confidenceellipse = false;
 
   let svgS;
   let svgD;                                                                           //the svg reference to pdfdisplay
@@ -210,6 +207,9 @@ $(function() {
   const $ci = $('#CI');
   const $cifrom = $('#cifrom');
   const $cito   = $('#cito');
+
+  const $displayCIs = $('#displayCIs');
+  let displayCIs = false;
 
   const $displaylinetomarkrho = $('#displaylinetomarkrho');
   let displaylinetomarkrho = false;
@@ -353,6 +353,8 @@ $(function() {
     $rval.text(rs.toFixed(2).toString().replace('0.', '.'));    
     $calculatedr.text(r.toFixed(2).toString().replace('0.', '.')); 
 
+    $labelx.hide();
+    $labely.hide();
     $statistics1.hide();
     $displaylines1.hide();
 
@@ -820,9 +822,13 @@ $(function() {
   $statistics1show.on('change', function() {
     statistics1show = $statistics1show.prop('checked');
     if (statistics1show) {
+      $labelx.show();
+      $labely.show();
       $statistics1.show();
     }
     else {
+      $labelx.hide();
+      $labely.hide();
       $statistics1.hide();
     }
 
@@ -844,8 +850,6 @@ $(function() {
       corrxy = false;
       $corrlineslope.prop('checked', false);
       corrlineslope = false;
-      $confidenceellipse.prop('checked', false);
-      confidenceellipse = false;
 
       //don't recreate scatters
       drawScatterGraph();
@@ -874,15 +878,6 @@ $(function() {
 
   $corrlineslope.on('change', function() {
     corrlineslope = $corrlineslope.is(':checked');
-
-    //don't recreate scatters
-    drawScatterGraph();
-    statistics();
-    displayStatistics();
-  })
-
-  $confidenceellipse.on('change', function() {
-    confidenceellipse = $confidenceellipse.is(':checked');
 
     //don't recreate scatters
     drawScatterGraph();
@@ -919,6 +914,11 @@ $(function() {
   
   
   //--------------------Panel 9 Confidence Intervals---------------------
+
+  $displayCIs.on('change', function() {
+    displayCIs = $displayCIs.is(':checked');
+
+  })
 
   //Select confidence interval % and alpha
   $ci.on('change', function() {
@@ -1242,10 +1242,6 @@ $(function() {
     }
     else {
       $loadtestdatapanel.hide();
-
-      //turn off ellipse
-      $confidenceellipse.prop('checked', false);
-      confidenceellipse = false;
     }
 
     createScatters();
