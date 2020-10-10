@@ -14,11 +14,12 @@ Licence       GNU General Public Licence Version 3, 29 June 2007
 0.0.4   09 Oct 2020 #4 Resize displays and font sizes positions
 0.0.5   09 Oct 2020    Add background image of scatter population.
 0.0.6   09 Oct 2020 #? Removed three lines from panel 10
+0.0.7   10 Oct 2020 #4 Increase font-size for r on axes
 
 */
 //#endregion 
 
-let version = '0.0.6';
+let version = '0.0.7';
 
 'use strict';
 $(function() {
@@ -493,8 +494,8 @@ $(function() {
     svgS.append('text').text('Y').attr('class', 'axistext').attr('x', x(-3.0) - 30).attr('y', y(0.0) - 10).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.4rem').style('font-weight', 'bold').style('font-style', 'italic');
 
     svgD.append('text').text('Correlation').attr('class', 'axistext').attr('x', rx(-1) - 15).attr('y', ry(0)-10 ).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.3rem').style('font-weight', 'bold');
-    svgD.append('text').text('r').attr('class', 'axistext').attr('x', rx(0) - 20).attr('y', ry(0) - 5 ).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.3rem').style('font-weight', 'bold').style('font-style', 'italic');
-    svgD.append('text').text('r').attr('class', 'axistext').attr('x', rx(0) - 20).attr('y', ry(100) + 15 ).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.3rem').style('font-weight', 'bold').style('font-style', 'italic');
+    svgD.append('text').text('r').attr('class', 'axistext').attr('x', rx(0) - 20).attr('y', ry(0) - 5 ).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.7rem').style('font-weight', 'bold').style('font-style', 'italic');
+    svgD.append('text').text('r').attr('class', 'axistext').attr('x', rx(0) - 20).attr('y', ry(100) + 15 ).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.7rem').style('font-weight', 'bold').style('font-style', 'italic');
 
 
     //add additional ticks for x scale
