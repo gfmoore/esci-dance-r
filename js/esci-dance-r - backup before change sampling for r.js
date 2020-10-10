@@ -16,12 +16,11 @@ Licence       GNU General Public Licence Version 3, 29 June 2007
 0.0.6   09 Oct 2020 #? Removed three lines from panel 10
 0.0.7   10 Oct 2020 #4 Increase font-size for r on axes
 0.0.8   10 Oct 2020 #2 Changed text to sample in panel 2
-0.0.9   10 Oct 2020 #5 Change the calculation of sample and remove the fix.
 
 */
 //#endregion 
 
-let version = '0.0.9';
+let version = '0.0.8';
 
 'use strict';
 $(function() {
@@ -542,26 +541,88 @@ $(function() {
 
   function createScatters() {
 
+    let iterateR = true;
+    let previousr = 0;
+    let T = 1;
+    let Tinc = 1;    
+    let diff;
+
     scatters      = [];
     xscatters     = [];
     yscatters     = [];
+    scattersarray = [];
 
-    let coeff = Math.sqrt(1 - rs*rs);
+    let xsa = [];
+    let ysa = [];
 
-    for (i = 0; i < N1; i += 1) {
-      xs = jStat.normal.sample( 0, 1 );
-      ys = jStat.normal.sample( 0, 1 );
+    if (!test) {
+      for (i = 0; i < N1; i += 1) {
+        xs = jStat.normal.sample( 0, 1 );
+        ys = jStat.normal.sample( 0, 1 );
+        xscatters.push(xs);
+        yscatters.push(ys);
+      }
 
-      //adjust
-      ys = (rs * xs) + (coeff * ys);
+      r = jStat.corrcoeff( xscatters, yscatters );
 
-      xscatters.push(xs);
-      yscatters.push(ys);
-      scatters.push( {x: xs, y: ys} );
+      if (rs > -1 && rs < 1 ) {
+
+        olddiff = (rs + 1) - (r + 1);
+        let min = 99;
+        let minT = 99;
+        //need to iterate to get closest r to rs
+        for (T =- 10; T < 20; T += 0.01) {
+          ysa = [];
+          //try for given value of T
+          for (i = 0; i < N1; i += 1) {
+            ysa[i] = (rs * xscatters[i] * T) + (Math.sqrt(1 - rs*rs) * yscatters[i]);
+          }
+          
+          r = jStat.corrcoeff( xscatters, ysa );  
+          diff = (rs + 1) - (r + 1);   //keep rs r positive
+
+          //lg('T = ' + T.toFixed(4) + '    Diff = ' + diff.toFixed(4));
+          if (min > Math.abs(diff)) {
+            min = Math.abs(diff);
+            minT = T;
+          }
+        }
+      
+        //lg('Minimum = ' + min.toFixed(4) + ' Minimum T = ' + minT);
+
+        scatters = []
+        for (i = 0; i < N1; i += 1) {
+          xs = xscatters[i]
+          ys = (rs * xscatters[i] * minT) + (Math.sqrt(1 - rs*rs) * yscatters[i]);
+          scatters.push( {x: xs, y: ys} );
+        }
+        yscatters = scatters.map(function (obj) { return obj.y; });
+
+      }
+      else {  //r=-1 or r=1
+        scatters = [];
+        for (i = 0; i < N1; i += 1) { 
+          ysa = (rs * xscatters[i] * 1) + (Math.sqrt(1 - rs*rs) * yscatters[i]);
+          scatters.push( {x: xscatters[i], y: ysa} )
+        }
+        xscatters = scatters.map(function (obj) { return obj.x; });
+        yscatters = scatters.map(function (obj) { return obj.y; });
+      }
+
     }
+    else {  //use test data
+      //cycle trhough the displayed data and load it into scatters
+      let datadivsx = $('.dataitems1');
+      let datadivsy = $('.dataitems2');
+      
+      for (i = 0; i < datadivsx.length; i += 1) {
+        scatters.push({ x: parseFloat(datadivsx[i].value), y: parseFloat(datadivsy[i].value) })
+      }
 
-    //now get corr coeff of sample
-    r = jStat.corrcoeff( xscatters, yscatters );
+      xscatters = scatters.map(function (obj) { return obj.x; });
+      yscatters = scatters.map(function (obj) { return obj.y; });
+
+    }
   }
 
   function drawScatterGraph() {
