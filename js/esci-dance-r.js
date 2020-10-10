@@ -15,11 +15,12 @@ Licence       GNU General Public Licence Version 3, 29 June 2007
 0.0.5   09 Oct 2020    Add background image of scatter population.
 0.0.6   09 Oct 2020 #? Removed three lines from panel 10
 0.0.7   10 Oct 2020 #4 Increase font-size for r on axes
+0.0.8   10 Oct 2020 #2 Changed text to sample in panel 2
 
 */
 //#endregion 
 
-let version = '0.0.7';
+let version = '0.0.8';
 
 'use strict';
 $(function() {
