@@ -18,11 +18,14 @@ Licence       GNU General Public Licence Version 3, 29 June 2007
 0.0.8   10 Oct 2020 #2 Changed text to sample in panel 2
 0.0.9   10 Oct 2020 #5 Change the calculation of sample and remove the fix.
 0.0.10  12 Oct 2020 #2 Added pop on/off and re-arranged items in panel 10
+0.0.11  12 Oct 2020 #5 Added in the dances code, but not yet aligned to spec
 
 */
 //#endregion 
 
-let version = '0.0.10';
+let version = '0.0.11';
+
+let testing = false;
 
 'use strict';
 $(function() {
@@ -30,6 +33,12 @@ $(function() {
 
   //#region for variable definitions (just allows code folding)
   let tooltipson              = false;                                        //toggle the tooltips on or off
+
+  // right panels
+  let svgS;
+  let svgD;                                                                           //the svg reference to pdfdisplay
+  const $displayS            = $('#displayS');
+  const $displayD            = $('#displayD');
 
   let margin;     //margins for pdf display area
 
@@ -42,9 +51,6 @@ $(function() {
   let rwidth;                                                                 //the width returned by resize
   let rheight;                                                                //the height returned by resize
 
-  const $danceonoff = $('#danceonoff');
-  let danceonoff = false;
-
   let pauseId;
   let repeatId;
   let delay = 50;
@@ -52,7 +58,40 @@ $(function() {
 
   let sliderinuse = false;
 
-  //tab 1 panel 1 N1
+  
+  let scatters = [];
+  let xscatters = [];
+  let yscatters = [];
+
+  let backgroundN = 5000;
+  let backgroundscatters = [];
+  let xbscatters = [];
+  let ybscatters = [];
+
+  let scatterSize = 3;
+  let dropSize = 4;
+
+  let xs;
+  let ys;
+
+  let i;
+
+  let blobId;
+  let bloby;
+  let dropGap = 15;
+
+  let alpha;
+  let lowerarm;
+  let upperarm;
+
+  let blobs = [];
+
+  //dances
+  let id = 0;
+  let lightGreen = 'lawngreen';
+
+  // Panel 1 N1
+  
   let $N1slider;
   let N1 = 4;
   const $N1val = $('#N1val');
@@ -60,7 +99,9 @@ $(function() {
   const $N1nudgebackward = $('#N1nudgebackward');
   const $N1nudgeforward = $('#N1nudgeforward');
 
-  //tab 1 panel 2 r
+
+  // Panel 2 r
+
   let $rslider;
 
   let rs = 0.5;                                                 //r slider
@@ -74,10 +115,19 @@ $(function() {
   const $rnudgebackward = $('#rnudgebackward');
   const $rnudgeforward = $('#rnudgeforward');
 
-  //tab 1 panel 3 New data set
-  const $newdataset = $('#newdataset');
   
-  //tab 1 panel 4 Display features
+  // Panel 3 Control Panel
+
+  const $clear = $('#clear');                         //the clear button
+  const $takeSample = $('#takesample');               //take one sample
+  const $runFreely = $('#runfreely');                 //toggle for run freely
+  let runFreely = false;                              //runfreely flag
+  const $speed = $('#speed');                         //speed slider mS
+  let speed;
+  let triggerTakeSample;                              //for use in the start stop timer
+
+  
+  // Panel 4 Display features
 
   const $displaypopn = $('#displaypopn')
   let displaypopn = false;
@@ -91,15 +141,23 @@ $(function() {
   const $displaymd = $('#displaymd');
   let displaymd = false;
 
-  //tab 1 panel 5 Descriptive statstics
+
+  // Panel 5 Descriptive statstics
+
   const $labelx = $('#labelx');
   const $labely = $('#labely');
   const $statistics1 = $('#statistics1');
   const $statistics1show = $('#statistics1show');
   let statistics1show = false;
 
+  const $m1 = $('#m1');
+  const $m2 = $('#m2');
+  const $s1 = $('#s1');
+  const $s2 = $('#s2');
+
   
-  //tab 1 panel 6 Display lines
+  // Panel 6 Display lines
+
   const $displaylines1 = $('#displaylines1');
   const $displaylines1show = $('#displaylines1show');
   let displaylines1show = false;
@@ -122,29 +180,6 @@ $(function() {
   const $corrlineslopeval = $('#corrlineslopeval');
   let corrlineslopeval;
 
-  let svgS;
-  let svgD;                                                                           //the svg reference to pdfdisplay
-  const $displayS            = $('#displayS');
-  const $displayD            = $('#displayD');
-
-  //different representation of the scatters (some for future usage)
-  let scatters = [];
-  let xscatters = [];
-  let yscatters = [];
-  let scattersarray = [];
-
-  let backgroundN = 5000;
-  let backgroundscatters = [];
-  let xbscatters = [];
-  let ybscatters = [];
-
-  let scatterSize = 3;
-
-  let xs;
-  let ys;
-
-  let i;
-
   let Mx = 0;
   let My = 0;
   let Sx = 0;
@@ -154,12 +189,6 @@ $(function() {
   let Sxy;
   let Syx;
   let Syy;
-
-  let Cxx;
-  let Cxy;
-  let Cyx;
-  let Cyy;
-  let Cm;
 
   //y on x
   let betayonx = 0;
@@ -179,57 +208,34 @@ $(function() {
   let yvaluecl1 = 0;
   let yvaluecl2 = 0;
 
-  let angle = 0;
 
-  const $m1 = $('#m1');
-  const $m2 = $('#m2');
-  const $s1 = $('#s1');
-  const $s2 = $('#s2');
+  // Panel 7 Dance of r values
 
-  /*-----------------load data--------------------*/
+  const $danceonoff = $('#danceonoff');
+  let danceonoff = false;
 
-  const $testdiv = $('#testdiv');
-  let testdiv = false;
 
-  const $test = $('#test');
-  let test = false;
-
-  $loadtestdatapanel = $('#loadtestdatapanel');
-
-  let testdata = false;
-
-  const $loaddata = $('#loaddata ');
-  const $cleardata = $('#cleardata');
-  const $cleardatayes = $('#cleardatayes');
-  const $cleardatano = $('#cleardatano');
-
-  const $datasetdiv = $('#datasetdiv');
-
-  let loaddata = true;
-
+  // Panel 8 Latest sample
 
   const $latestsamplesection = $('#latestsamplesection');
-  const $CIsection = $('#CIsection');
-  const $capturesection = $('#capturesection');
-
-  const $clear = $('#clear');                         //the clear button
-  const $takeSample = $('#takesample');               //take one sample
-  const $runFreely = $('#runfreely');                 //toggle for run freely
-  let runFreely = false;                              //runfreely flag
-  const $speed = $('#speed');                         //speed slider mS
-  let speed;
-  let triggerTakeSample;                              //for use in the start stop timer
-
   const $latestsample = $('#latestsample');
-  const $ci = $('#CI');
-  const $cifrom = $('#cifrom');
-  const $cito   = $('#cito');
+  
+  // Panel 9 Confidence Intervals
 
+  const $CIsection = $('#CIsection');
+  
   const $displayCIs = $('#displayCIs');
   let displayCIs = false;
+  
+  const $ci = $('#CI');
 
-  const $showrheap = $('#showrheap');
-  let showheap = false;
+  const $cifrom = $('#cifrom');
+  const $cito   = $('#cito');
+  
+
+  // Panel 10 Capture section
+
+  const $capturesection = $('#capturesection');
 
   const $displaylinetomarkrho = $('#displaylinetomarkrho');
   let displaylinetomarkrho = false;
@@ -237,10 +243,11 @@ $(function() {
   const $showcapture = $('#showcapture');
   let showcapture = false;
 
+  const $showrheap = $('#showrheap');
+  let showheap = false;
+
   const $numbersamplestaken = $('#numbersamplestaken');
 
-  const $lowerarm = $('#lowerarm');
-  const $upperarm = $('#upperarm');
 
   const $percentCIcapture = $('#percentCIcapture');
 
@@ -254,27 +261,41 @@ $(function() {
   initialise();
 
   function initialise() {
-    
-    //show dance panels
+
+    d3.selectAll('svg > *').remove();  //remove all elements under svg
+    $('svg').remove();  
+
+    //hide dance panels
     $displayD.hide();
     $latestsamplesection.hide();
     $CIsection.hide();
     $capturesection.hide();
-  
+
+    //TESTING
+    if (testing) {
+      danceonoff = true;
+      $danceonoff.prop("checked", true);
+
+      //show dance panels
+      $displayD.show();
+      $latestsamplesection.show();
+      $CIsection.show();
+      $capturesection.show();
+    }
+
     //get initial dimensions of #display div
-    //margin = {top: 30, right: 50, bottom: 20, left: 50}; 
     margin = {top: 15, right: 15, bottom: 0, left: 15};
 
     rheight = $('#main').outerHeight(true);
-    //rwidth  = $('#main').outerWidth(true)  -  $('#leftpanel').outerWidth(true); 
     rwidth  = $('html').outerWidth(true)  -  $('#leftpanel').outerWidth(true); 
 
-    setDisplaySize();
+    //setDisplaySize();
     setupSliders();
     setTooltips();
 
     clear();
-    takeSample();
+    //takeSample();
+
   }
 
  
@@ -369,12 +390,13 @@ $(function() {
 
     //set sliders to initial
     N1 = 4;
-    //temp    updateN1();
     $N1val.text(N1.toFixed(0));
 
     rs = 0.5;
     r  = 0.5;
-    //    updater();
+
+    alpha = parseFloat($ci.val()); 
+
     $rval.text(rs.toFixed(2).toString().replace('0.', '.'));    
     $calculatedr.text(r.toFixed(2).toString().replace('0.', '.')); 
 
@@ -390,6 +412,15 @@ $(function() {
 
     backgroundScatters();
     if (displaypopn) displayBackgroundScatters();
+
+    //clear all dances and heap
+    d3.selectAll('.rsampleblob').remove();
+    d3.selectAll('.rsamplewing').remove();
+
+    d3.selectAll('.rheap').remove(); 
+
+    id = 0;
+    blobs = [];
   }
 
   function resize() {
@@ -403,16 +434,16 @@ $(function() {
     statistics();
     displayStatistics();
 
+    redisplayDance();
 
   }
 
   function setDisplaySize() {
 
-    d3.selectAll('svg > *').remove();  //remove all elements under svgP
+    d3.selectAll('svg > *').remove();  //remove all elements under svg
     $('svg').remove();  
 
     rheight = $('#main').outerHeight(true);
-    //rwidth  = $('#main').outerWidth(true)  - $('#leftpanel').outerWidth(true);
     rwidth  = $('html').outerWidth(true)  - $('#leftpanel').outerWidth(true);
 
     if (danceonoff) {
@@ -450,14 +481,9 @@ $(function() {
       scatterSize = 3;
     }
 
-    //if (widthS < heightS) 
-
-  
     //change #display scatters
     $displayS.css('width', widthS);
     $displayS.css('height', heightS);
-
-    svgS = d3.select('#displayS').append('svg').attr('width', '100%').attr('height', '100%');
 
     //add some margin to scatters display
     $displayS.css('margin-left', widthD/2 - widthS/2);
@@ -465,6 +491,8 @@ $(function() {
     //change #display dance
     $displayD.css('width', widthD);
     $displayD.css('height', heightD);
+
+    svgS = d3.select('#displayS').append('svg').attr('width', '100%').attr('height', '100%');
 
     svgD = d3.select('#displayD').append('svg').attr('width', '100%').attr('height', '100%');
 
@@ -494,14 +522,14 @@ $(function() {
     let rAxisTop = d3.axisBottom(rx).tickPadding([10]).ticks(7).tickFormat(d3.format('')); //.ticks(20); //.tickValues([]);
     svgD.append('g').attr('class', 'raxis').style("font", "1.3rem sans-serif").attr( 'transform', `translate(${0}, ${heightD - 40})` ).call(rAxisTop);
     let rAxisBottom = d3.axisTop(rx).tickPadding([10]).ticks(7).tickFormat(d3.format('')); //.ticks(20); //.tickValues([]);
-    svgD.append('g').attr('class', 'raxis').style("font", "1.3rem sans-serif").attr( 'transform', `translate(${0}, 40)` ).call(rAxisBottom);
+    svgD.append('g').attr('class', 'raxis').style("font", "1.3rem sans-serif").attr( 'transform', `translate(${0}, 45)` ).call(rAxisBottom);
 
 
     //add some axis labels
     svgS.append('text').text('X').attr('class', 'axistext').attr('x', x(0) + 10).attr('y', y(-3.0) + 30).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.4rem').style('font-weight', 'bold').style('font-style', 'italic');
     svgS.append('text').text('Y').attr('class', 'axistext').attr('x', x(-3.0) - 30).attr('y', y(0.0) - 10).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.4rem').style('font-weight', 'bold').style('font-style', 'italic');
 
-    svgD.append('text').text('Correlation').attr('class', 'axistext').attr('x', rx(-1) - 15).attr('y', ry(0)-10 ).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.3rem').style('font-weight', 'bold');
+    svgD.append('text').text('Correlation').attr('class', 'axistext').attr('x', rx(-1) - 15).attr('y', ry(0)-8 ).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.3rem').style('font-weight', 'bold');
     svgD.append('text').text('r').attr('class', 'axistext').attr('x', rx(0) - 20).attr('y', ry(0) - 5 ).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.7rem').style('font-weight', 'bold').style('font-style', 'italic');
     svgD.append('text').text('r').attr('class', 'axistext').attr('x', rx(0) - 20).attr('y', ry(100) + 15 ).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.7rem').style('font-weight', 'bold').style('font-style', 'italic');
 
@@ -544,6 +572,9 @@ $(function() {
     drawScatterGraph();
     statistics();
     displayStatistics();
+
+    createDance();
+    displayDance();
   }
 
   function createScatters() {
@@ -611,15 +642,6 @@ $(function() {
     }
     Syx = Sxy;
     
-    //covariance matrix Cm - [Cxx Cxy]        //if needed
-    //                       [Cyx Cyy]    
-    Cxx = jStat.covariance(xscatters, xscatters);  //this is the xsd^2, that is the variance of x
-    Cxy = jStat.covariance(xscatters, yscatters);
-    Cyx = jStat.covariance(yscatters, xscatters);  //same as Cxy really
-    Cyy = jStat.covariance(yscatters, yscatters);  //ths is the ysd^2, that is the variance of x
-
-    Cm = [[Cxx, Cxy], [Cyx, Cyy]];
-
     //get gradients of y on x, x on y and correlation line
     betayonx = r * Sy/Sx;
     betaxony = r * Sx/Sy;
@@ -652,7 +674,9 @@ $(function() {
     $s2.text(Sy.toFixed(2).toString());
 
     //display calculated r from data
-    $calculatedr.text(r.toFixed(2).toString().replace('0.', '.'))
+    $calculatedr.text(r.toFixed(2).toString().replace('0.', '.'));
+
+    $latestsample.text(r.toFixed(2).toString().replace('0.', '.'));
 
     //display calculated r on graph
     if(displayr) { 
@@ -725,6 +749,118 @@ $(function() {
     }
   }
 
+  function createDance() {
+
+    //move down previous blobs and wings if any
+    d3.selectAll('.rsampleblob').each(function() {
+
+      blobId = parseInt($(this).attr('id').substring(1));
+      bloby = parseInt($(this).attr('cy'));
+
+      //now move items down 1 pixel at a time until done or goes past limit.  It's so fast though, you can't see the blob reach the bottom.
+      for (let i = 0; i < dropGap; i += 1) {
+        bloby += 1;
+        if (bloby < heightD - 43) { //move the blob and wings if go past bottom
+          d3.select('#leftwing'+blobId).attr('y1', bloby).attr('y2', bloby);
+          d3.select('#rightwing'+blobId).attr('y1', bloby).attr('y2', bloby);
+          $(this).attr('cy', bloby);
+        }
+        else { //remove the blob and wings
+          d3.select('#leftwing'+blobId).remove();
+          d3.select('#rightwing'+blobId).remove();
+          $(this).remove();
+          break; //out of for loop I hope
+        }
+      }
+
+    })
+
+    
+    calculateFisherrtozTransformation();  //provides lowerarm, upperarm 
+
+    //display these values
+    $cifrom.text(lowerarm.toFixed(2));
+    $cito.text(upperarm.toFixed(2));
+
+    //create wings for current sample
+    svgD.append('line').attr('class', 'rsamplewing').attr('id', 'leftwing' + id).attr('x1', rx(lowerarm)).attr('y1', 55).attr('x2', rx(r) ).attr('y2', 55).attr('stroke', lightGreen).attr('stroke-width', 3).attr('visibility', 'hidden');
+    svgD.append('line').attr('class', 'rsamplewing').attr('id', 'rightwing' + id).attr('x1', rx(r)).attr('y1', 55).attr('x2', rx(upperarm) ).attr('y2', 55).attr('stroke', lightGreen).attr('stroke-width', 3).attr('visibility', 'hidden');
+
+    //create blob for current sample
+    svgD.append('circle').attr('class', 'rsampleblob').attr('id', 'r' + id).attr('r', r).attr('cx', rx(r)).attr('cy', 55).attr('r', dropSize).attr('stroke', 'black').attr('stroke-width', 1).attr('fill', lightGreen).attr('visibility', 'hidden');
+
+    //add to blobs array for if redisplay needed on resize
+    blobs.push(
+      {
+        id: id,
+        r: r,
+        lowerarm: lowerarm,
+        upperarm: upperarm
+      }
+    )
+
+    id += 1;
+
+  }
+
+
+  function calculateFisherrtozTransformation() {
+
+    let zr = 0.5 * Math.log( ( 1 + r ) / ( 1 - r ) );  //Math.log is the natural logarithm
+
+    //let cv = jStat.studentt.inv( alpha/2, N1 - 1 );       //critical value
+    let cv = Math.abs(jStat.normal.inv( alpha/2, 0, 1));    //critical value  e.g. 0.05 gives 1.96
+
+    lowerarm = zr - ( cv * 1 / (Math.sqrt(N1 - 3)) );
+    upperarm = zr + ( cv * 1 / (Math.sqrt(N1 - 3)) );
+
+    //now transform back to r values
+
+    lowerarm = (Math.exp( 2 * lowerarm) - 1 ) / (Math.exp( 2 * lowerarm) + 1 );
+    upperarm = (Math.exp( 2 * upperarm) - 1 ) / (Math.exp( 2 * upperarm) + 1 );    
+
+  }
+
+
+  function displayDance() {
+    //show wings and blob
+    d3.selectAll('.rsampleblob').attr('visibility', 'visible');
+    if (displayCIs) {
+      d3.selectAll('.rsamplewing').attr('visibility', 'visible');
+    }
+    else {
+      d3.selectAll('.rsamplewing').attr('visibility', 'hidden');
+    }
+  }
+
+  function redisplayDance() {
+    if (!danceonoff) return;
+    
+    //go through blobs array from the last one first
+    bloby = 55;
+    for (let i = blobs.length-1; i >= 0; i -= 1) {
+      id = blobs[i].id;
+      r  = blobs[i].r;
+      lowerarm = blobs[i].lowerarm;
+      upperarm = blobs[i].upperarm;
+
+      //create wings for current sample
+      if (displayCIs) {
+        svgD.append('line').attr('class', 'rsamplewing').attr('id', 'leftwing' + id).attr('x1', rx(lowerarm)).attr('y1', bloby).attr('x2', rx(r) ).attr('y2', bloby).attr('stroke', lightGreen).attr('stroke-width', 3).attr('visibility', 'visible');
+        svgD.append('line').attr('class', 'rsamplewing').attr('id', 'rightwing' + id).attr('x1', rx(r)).attr('y1', bloby).attr('x2', rx(upperarm) ).attr('y2', bloby).attr('stroke', lightGreen).attr('stroke-width', 3).attr('visibility', 'visible');
+      }
+      else {
+        svgD.append('line').attr('class', 'rsamplewing').attr('id', 'leftwing' + id).attr('x1', rx(lowerarm)).attr('y1', bloby).attr('x2', rx(r) ).attr('y2', bloby).attr('stroke', lightGreen).attr('stroke-width', 3).attr('visibility', 'hidden');
+        svgD.append('line').attr('class', 'rsamplewing').attr('id', 'rightwing' + id).attr('x1', rx(r)).attr('y1', bloby).attr('x2', rx(upperarm) ).attr('y2', bloby).attr('stroke', lightGreen).attr('stroke-width', 3).attr('visibility', 'hidden');
+      }
+
+      //create blob for current sample
+      svgD.append('circle').attr('class', 'rsampleblob').attr('id', 'r' + id).attr('r', r).attr('cx', rx(r)).attr('cy', bloby).attr('r', dropSize).attr('stroke', 'black').attr('stroke-width', 1).attr('fill', lightGreen).attr('visibility', 'visible');
+
+      bloby += dropGap;
+      if ( bloby >= heightD - 42 ) break;
+    }
+  }
 
   /*-------------------Panel 3 Controls ------------------*/
 
@@ -743,6 +879,9 @@ $(function() {
     drawScatterGraph();
     statistics();
     displayStatistics();
+
+    createDance();
+    displayDance();
 
     //takeSample();
   })
@@ -895,7 +1034,7 @@ $(function() {
   })
 
 
-  //--------------Tab 1 Panel 7  Dance of the r values-------------------------
+  //--------------------Panel 7  Dance of the r values-------------------------
 
   //hide or show the dances panel  
   $danceonoff.on('change', function() {
@@ -908,6 +1047,8 @@ $(function() {
     drawScatterGraph();
     displayStatistics();
 
+    createDance();
+    displayDance();
 
     if (danceonoff) {
       $displayD.show();
@@ -926,17 +1067,22 @@ $(function() {
     }
   })
   
-  
+
+  //-------------------Panel 8 Latest Sample r
+
+
   //--------------------Panel 9 Confidence Intervals---------------------
 
   $displayCIs.on('change', function() {
     displayCIs = $displayCIs.is(':checked');
-
+    displayDance();
   })
 
   //Select confidence interval % and alpha
   $ci.on('change', function() {
+    alpha = parseFloat($ci.val()); 
 
+    //***************do some redisplay and recalc stuff
   });
 
 
@@ -958,7 +1104,7 @@ $(function() {
   })
 
 /*-----------------------N1 nudge bars------------------------------------*/
-//#region nudge bars
+  //#region nudge bars
   //changes to N1
   $N1val.on('change', function() {
     if ( isNaN($N1val.val()) ) {
@@ -1227,125 +1373,6 @@ $(function() {
       $display.removeClass('box');
       $('#boxHere').height(0);
     }
-  }
-
-
-  //----------------------------clear data buttons--------------------------------------------------
-
-  $cleardata.on('click', function() {
-    $cleardatayes.show();
-    $cleardatano.show();
-  })
-
-  $cleardatayes.on('click', function() {
-    $cleardatayes.hide();
-    $cleardatano.hide();
-    
-    //clear the data
-    $('.dataitems1').remove();
-    $('.dataitems2').remove();
-  })
-
-  $cleardatano.on('click', function() {
-    $cleardatayes.hide();
-    $cleardatano.hide();
-  })  
-
-
-  //----------------------------load data buttons--------------------------------------------------
-
-  //open test data panel
-  $test.on('change', function() {
-    test = $test.prop('checked');
-    if (test) {
-      $loadtestdatapanel.show();
-    }
-    else {
-      $loadtestdatapanel.hide();
-    }
-
-    createScatters();
-    drawScatterGraph();
-    statistics();
-    displayStatistics();
-  })
-
-  $loaddata.on('click', function() {
-    $('#datasetdiv').show(); 
-
-    if (loaddata) {
-      $('#datasetdiv').show();
-      loaddata = false;
-    }
-    else {
-      $('#datasetdiv').hide();
-      loaddata = true;
-    }
-  })
-
-  $('#dataset').on('change', function(e) {
-    let thefile = e.target.files; // FileList object
-    let reader = new FileReader();
-
-    let heading = true;
-    let splits;
-    let split;
-
-    $('.dataitems1').remove();
-    $('.dataitems2').remove();
-
-    reader.onload = function(event) {
-      //lg(reader.result);
-      splits = reader.result.split('\r\n');
-
-      for (let i = 0; i < splits.length-1; i += 1) {
-
-        split = splits[i].split(',');
-
-        if (heading) {
-          $('#group1labelpd').val(split[0]);
-          $('#group2labelpd').val(split[1]); 
-          heading = false;       
-        }
-        else {
-          $('#data').append(  `<input type=text class=dataitems1 value=${ split[0] }> <input type=text class=dataitems2 value=${ split[1] }>` );
-        }
-      }
-
-      createScatters();
-      drawScatterGraph();
-      statistics();
-      displayStatistics();      
-
-    }
-
-    reader.readAsText(thefile[0]);
-    $('#datasetdiv').hide();
-    loaddata = true;
-
-  })
-
-  $('.dataitems1').on('change', function() {
-    createScatters();
-    drawScatterGraph();
-    statistics();
-    displayStatistics();
-  })
-
-  $('.dataitems2').on('change', function() {
-    createScatters();
-    drawScatterGraph();
-    statistics();
-    displayStatistics();
-  })
-
-
-  function loadTestData() {
-    $('#data').append(  `<input type=text class=dataitems1 value=${ -2.9 }> <input type=text class=dataitems2 value=${ -2.6 }>` );
-    $('#data').append(  `<input type=text class=dataitems1 value=${ -1.2 }>  <input type=text class=dataitems2 value=${ -1.5 }>` );
-    $('#data').append(  `<input type=text class=dataitems1 value=${ 0.3 }>   <input type=text class=dataitems2 value=${ -0.6 }>` );
-    $('#data').append(  `<input type=text class=dataitems1 value=${ 1.4 }>   <input type=text class=dataitems2 value=${ 2.8 }>` );
-    $('#data').append(  `<input type=text class=dataitems1 value=${ 2.5 }>   <input type=text class=dataitems2 value=${ 2.2 }>` );
   }
 
 })

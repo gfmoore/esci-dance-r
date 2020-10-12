@@ -13,6 +13,7 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
 0.0.3   09 Oct 2020 #3 Speed control adjustment
 0.0.9  
 0.0.10  12 Oct 2020 #2 Added pop on/off and re-arranged items in panel 10
+0.0.11
 
 #endregion */
 
@@ -90,7 +91,7 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
 }
 
 
-/*--------------Tab 1 Panel 1 N1-----------------------*/
+/*--------------Panel 1 N1-----------------------*/
 #N1panel {
   border: 1px solid black;
   background-color: #FFFF99;
@@ -118,7 +119,7 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
   width: 4rem;
 }
 
-/*--------------Tab 1 Panel 2 r-----------------------*/
+/*--------------Panel 2 r-----------------------*/
 #rpanel {
   border: 1px solid black;
   background-color: #CCFFCC;
@@ -149,7 +150,7 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
 }
 
 
-/*-------------------------Tab 1 Panel 3 Run and controls section------------------------------------------------------------------*/
+/*----------------- Panel 3 Run and controls section------------------------------------------------------------------*/
 
 #runcontrols {
   border: 1px solid black;
@@ -186,7 +187,7 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
   user-select: none;
 }
 
-#clearsample {
+#clear {
   background-color: lemonchiffon;
   display: flex;  /*to centre text vertically and horizontally*/
   align-items: center;
@@ -194,11 +195,11 @@ Licence       GNU General Public LIcence Version 3, 29 June 2007
   text-align: center;
 }
 
-#clearsample:hover {
+#clear:hover {
   background-color: yellow;
 }
 
-#clearsample:active {
+#clear:active {
   background-color: orange;
   user-select: none;
 }
@@ -238,7 +239,7 @@ input[type="range"]::-webkit-slider-thumb{  /*might not work with some browsers*
 }
 
 
-/*--------------Tab 1 Panel 4 Display features-----------------------*/
+/*------------------- Panel 4 Display features-----------------------*/
 #displayfeaturespanel {
   border: 1px solid black;
   background-color: #CCFFFF;
@@ -260,7 +261,7 @@ input[type="range"]::-webkit-slider-thumb{  /*might not work with some browsers*
   margin-bottom: 1.0rem;
 }
 
-/*--------------Tab 1 Panel 5 Descriptive statistics 1-----------------------*/
+/*--------------------- Panel 5 Descriptive statistics-----------------------*/
 #displaystatistics1spanel {
   border: 1px solid black;
   background-color: #D2C4EE;
@@ -297,7 +298,7 @@ input[type="range"]::-webkit-slider-thumb{  /*might not work with some browsers*
   text-align: right;
 }
 
-/*--------------Tab 1 Panel 6 Display lines-----------------------*/
+/*-------------------- Panel 6 Display lines-----------------------*/
 #displaylines1panel {
   border: 1px solid black;
   background-color: papayawhip;
@@ -323,7 +324,7 @@ input[type="range"]::-webkit-slider-thumb{  /*might not work with some browsers*
 }
 
 
-/*-----------------------------Tab 1 panel 7 dance of the p-values-----------------------------------------------*/
+/*----------------------------- Panel 7 dance of the p-values-----------------------------------------------*/
 
 #rvaluesection {
   border: 1px solid black;
@@ -362,14 +363,14 @@ input[type="range"]::-webkit-slider-thumb{  /*might not work with some browsers*
 }
 
 
-/*--------------------------------Tab 1 panel 8 Latest sample ------------------------------------------------------*/
+/*-------------------------------- Panel 8 Latest sample ------------------------------------------------------*/
 
 #latestsamplesection {
   border: 1px solid black;
   background-color: #ffcc99;
   padding: 0.5rem;
   display: grid;
-  grid-template-columns: 15rem auto;
+  grid-template-columns: 12rem auto;
 }
 
 .latestsampledivtip {
@@ -377,7 +378,7 @@ input[type="range"]::-webkit-slider-thumb{  /*might not work with some browsers*
 }
 
 
-/*---------------------------------------Tab 1 panel 9 CI Section------------------------------------------------------------------*/
+/*---------------------------------- Panel 9 CI Section------------------------------------------------------------------*/
 
 #cipcntdiv {
   display: grid;
@@ -412,7 +413,7 @@ input[type="range"]::-webkit-slider-thumb{  /*might not work with some browsers*
   padding-left: 3.5rem;
 }
 
-/*----------------------------------Tab 1 panel 10 Capture Section------------------------------------------------------------------*/
+/*---------------------------------- Panel 10 Capture Section------------------------------------------------------------------*/
 
 #capturesection {
   border: 1px solid black;
