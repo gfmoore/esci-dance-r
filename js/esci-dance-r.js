@@ -208,6 +208,8 @@ $(function() {
   let yvaluecl1 = 0;
   let yvaluecl2 = 0;
 
+  let betaxonyinverse = 0;
+
 
   // Panel 7 Dance of r values
 
@@ -760,7 +762,7 @@ $(function() {
       //now move items down 1 pixel at a time until done or goes past limit.  It's so fast though, you can't see the blob reach the bottom.
       for (let i = 0; i < dropGap; i += 1) {
         bloby += 1;
-        if (bloby < heightD - 43) { //move the blob and wings if go past bottom
+        if (bloby < heightD - 40) { //move the blob and wings if go past bottom
           d3.select('#leftwing'+blobId).attr('y1', bloby).attr('y2', bloby);
           d3.select('#rightwing'+blobId).attr('y1', bloby).attr('y2', bloby);
           $(this).attr('cy', bloby);
@@ -858,7 +860,7 @@ $(function() {
       svgD.append('circle').attr('class', 'rsampleblob').attr('id', 'r' + id).attr('r', r).attr('cx', rx(r)).attr('cy', bloby).attr('r', dropSize).attr('stroke', 'black').attr('stroke-width', 1).attr('fill', lightGreen).attr('visibility', 'visible');
 
       bloby += dropGap;
-      if ( bloby >= heightD - 42 ) break;
+      if ( bloby >= heightD - 40 ) break;
     }
   }
 
