@@ -17,11 +17,12 @@ Licence       GNU General Public Licence Version 3, 29 June 2007
 0.0.7   10 Oct 2020 #4 Increase font-size for r on axes
 0.0.8   10 Oct 2020 #2 Changed text to sample in panel 2
 0.0.9   10 Oct 2020 #5 Change the calculation of sample and remove the fix.
+0.0.10  12 Oct 2020 #2 Added pop on/off and re-arranged items in panel 10
 
 */
 //#endregion 
 
-let version = '0.0.9';
+let version = '0.0.10';
 
 'use strict';
 $(function() {
@@ -77,6 +78,10 @@ $(function() {
   const $newdataset = $('#newdataset');
   
   //tab 1 panel 4 Display features
+
+  const $displaypopn = $('#displaypopn')
+  let displaypopn = false;
+
   const $displayr = $('#displayr');
   let displayr = false;
 
@@ -223,6 +228,9 @@ $(function() {
   const $displayCIs = $('#displayCIs');
   let displayCIs = false;
 
+  const $showrheap = $('#showrheap');
+  let showheap = false;
+
   const $displaylinetomarkrho = $('#displaylinetomarkrho');
   let displaylinetomarkrho = false;
 
@@ -264,8 +272,6 @@ $(function() {
     setDisplaySize();
     setupSliders();
     setTooltips();
-
-
 
     clear();
     takeSample();
@@ -383,7 +389,7 @@ $(function() {
     setupAxes();    
 
     backgroundScatters();
-    displayBackgroundScatters();
+    if (displaypopn) displayBackgroundScatters();
   }
 
   function resize() {
@@ -708,14 +714,15 @@ $(function() {
   function displayBackgroundScatters() {
     d3.selectAll('.backgroundscatters').remove();
 
-    for (i = 0; i < backgroundN; i += 1) {
-      if      (backgroundscatters[i].x < -3)  svgS.append('circle').attr('class', 'backgroundscatters').attr('cx', x(-3.05)).attr('cy', y(backgroundscatters[i].y)).attr('r', scatterSize).attr('stroke', 'white').attr('stroke-width', 2).attr('fill', 'white');      
-      else if (backgroundscatters[i].x > 3)   svgS.append('circle').attr('class', 'backgroundscatters').attr('cx', x(3.05)).attr('cy', y(backgroundscatters[i].y)).attr('r', scatterSize).attr('stroke', 'white').attr('stroke-width', 2).attr('fill', 'white'); 
-      else if (backgroundscatters[i].y < -3)  svgS.append('circle').attr('class', 'backgroundscatters').attr('cx', x(backgroundscatters[i].x)).attr('cy', y(-3.05)).attr('r', scatterSize).attr('stroke', 'white').attr('stroke-width', 2).attr('fill', 'white'); 
-      else if (backgroundscatters[i].y > 3)   svgS.append('circle').attr('class', 'backgroundscatters').attr('cx', x(backgroundscatters[i].x)).attr('cy', y(3.05)).attr('r', scatterSize).attr('stroke', 'white').attr('stroke-width', 2).attr('fill', 'white'); 
-      else  /*normal*/              svgS.append('circle').attr('class', 'backgroundscatters').attr('cx', x(backgroundscatters[i].x)).attr('cy', y(backgroundscatters[i].y)).attr('r', scatterSize).attr('stroke', '#DEDEDE').attr('stroke-width', 1).attr('fill', 'white');
+    if (displaypopn) {
+      for (i = 0; i < backgroundN; i += 1) {
+        if      (backgroundscatters[i].x < -3)  svgS.append('circle').attr('class', 'backgroundscatters').attr('cx', x(-3.05)).attr('cy', y(backgroundscatters[i].y)).attr('r', scatterSize).attr('stroke', 'white').attr('stroke-width', 2).attr('fill', 'white');      
+        else if (backgroundscatters[i].x > 3)   svgS.append('circle').attr('class', 'backgroundscatters').attr('cx', x(3.05)).attr('cy', y(backgroundscatters[i].y)).attr('r', scatterSize).attr('stroke', 'white').attr('stroke-width', 2).attr('fill', 'white'); 
+        else if (backgroundscatters[i].y < -3)  svgS.append('circle').attr('class', 'backgroundscatters').attr('cx', x(backgroundscatters[i].x)).attr('cy', y(-3.05)).attr('r', scatterSize).attr('stroke', 'white').attr('stroke-width', 2).attr('fill', 'white'); 
+        else if (backgroundscatters[i].y > 3)   svgS.append('circle').attr('class', 'backgroundscatters').attr('cx', x(backgroundscatters[i].x)).attr('cy', y(3.05)).attr('r', scatterSize).attr('stroke', 'white').attr('stroke-width', 2).attr('fill', 'white'); 
+        else  /*normal*/              svgS.append('circle').attr('class', 'backgroundscatters').attr('cx', x(backgroundscatters[i].x)).attr('cy', y(backgroundscatters[i].y)).attr('r', scatterSize).attr('stroke', '#DEDEDE').attr('stroke-width', 1).attr('fill', 'white');
+      }
     }
-
   }
 
 
@@ -781,6 +788,15 @@ $(function() {
 
 
   /*---------------------Panel 4 Display Features-------------*/
+
+  $displaypopn.on('change', function() {
+    displaypopn = $displaypopn.is(':checked');
+
+    displayBackgroundScatters();  //will only display if displaypopn = true
+    drawScatterGraph();
+    statistics();
+    displayStatistics();
+  })
 
   $displayr.on('change', function() {
     displayr = $displayr.is(':checked');
@@ -928,12 +944,18 @@ $(function() {
 
   $displaylinetomarkrho.on('change', function() {
     displaylinetomarkrho = $displaylinetomarkrho.is(':checked');
+
   })
 
   $showcapture.on('change', function() {
     showcapture = $showcapture.is(':checked');
+
   })
 
+  $showrheap.on('change', function() {
+    showrheap = $showrheap.is(':checked');
+
+  })
 
 /*-----------------------N1 nudge bars------------------------------------*/
 //#region nudge bars
