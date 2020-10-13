@@ -21,11 +21,12 @@ Licence       GNU General Public Licence Version 3, 29 June 2007
 0.0.11  12 Oct 2020 #5 Added in the dances code, but not yet aligned to spec
 0.0.12  13 Oct 2020 #8 Clear button spec
 0.0.13  13 Oct 2020 #6 Implemented spec as far as I can - no capture, no heap
+0.0.14  13 Oct 2020 #9 First implementation of capture of rho
 
 */
 //#endregion 
 
-let version = '0.0.13';
+let version = '0.0.14';
 
 let testing = false;
 
@@ -260,6 +261,10 @@ $(function() {
   let captured = 0;
   let percentCaptured = 0;
 
+  let lastlowerarm;
+  let lastupperarm;
+
+
   //#endregion
 
   //breadcrumbs
@@ -290,6 +295,12 @@ $(function() {
       $latestsamplesection.show();
       $CIsection.show();
       $capturesection.show();
+
+      $displayCIs.prop('checked', true);
+      displayCIs = true;
+
+      $displaylinetomarkrho.prop('checked', true);
+      displaylinetomarkrho = true;
     }
 
     //set up an initial background scatters
@@ -313,7 +324,6 @@ $(function() {
     takeSample();
   }
 
- 
   function setupSliders() {
 
     $('#N1slider').ionRangeSlider({
@@ -436,15 +446,16 @@ $(function() {
 
     if (danceon && displaylinetomarkrho) drawrholine();
 
-  }
-
-  function SCA() {
-    stop();
-
     $displayCIs.prop('checked', false);
     displayCIs = false;
     $cifrom.text('-');
     $cito.text('-');
+    $percentCIcapture.text('-');
+
+  }
+
+  function SCA() {
+    stop();
 
     $displaylinetomarkrho.prop('checked', false);
     displaylinetomarkrho = false;
@@ -454,7 +465,6 @@ $(function() {
 
     $showrheap.prop('checked', false);
     showrheap = false;
-    
   }
 
   function resize() {
@@ -857,12 +867,24 @@ $(function() {
     $cifrom.text(lowerarm.toFixed(2));
     $cito.text(upperarm.toFixed(2));
 
-    //create wings for current sample
-    svgD.append('line').attr('class', 'rsamplewing').attr('id', 'leftwing' + id).attr('x1', rx(lowerarm)).attr('y1', 55).attr('x2', rx(r) ).attr('y2', 55).attr('stroke', lightGreen).attr('stroke-width', 3).attr('visibility', 'hidden');
-    svgD.append('line').attr('class', 'rsamplewing').attr('id', 'rightwing' + id).attr('x1', rx(r)).attr('y1', 55).attr('x2', rx(upperarm) ).attr('y2', 55).attr('stroke', lightGreen).attr('stroke-width', 3).attr('visibility', 'hidden');
+    //just remember the last lowerarm, upperarm for use with displayCIs on off
+    lastlowerarm = lowerarm;
+    lastupperarm = upperarm;
 
-    //create blob for current sample
-    svgD.append('circle').attr('class', 'rsampleblob').attr('id', 'r' + id).attr('r', r).attr('cx', rx(r)).attr('cy', 55).attr('r', dropSize).attr('stroke', 'black').attr('stroke-width', 1).attr('fill', lightGreen).attr('visibility', 'hidden');
+    //create wings for current sample
+    if (showcapture && (upperarm < rs || lowerarm > rs)) {
+      svgD.append('line').attr('class', 'rsamplewing').attr('id', 'leftwing' + id).attr('x1', rx(lowerarm)).attr('y1', 55).attr('x2', rx(r) ).attr('y2', 55).attr('lowerarm', lowerarm).attr('stroke', 'red').attr('stroke-width', 3).attr('visibility', 'hidden');
+      svgD.append('line').attr('class', 'rsamplewing').attr('id', 'rightwing' + id).attr('x1', rx(r)).attr('y1', 55).attr('x2', rx(upperarm) ).attr('y2', 55).attr('upperarm', upperarm).attr('stroke', 'red').attr('stroke-width', 3).attr('visibility', 'hidden');
+  
+      svgD.append('circle').attr('class', 'rsampleblob').attr('id', 'r' + id).attr('r', r).attr('cx', rx(r)).attr('cy', 55).attr('r', dropSize).attr('stroke', 'black').attr('stroke-width', 1).attr('fill', 'red').attr('visibility', 'hidden');
+
+    }
+    else {
+      svgD.append('line').attr('class', 'rsamplewing').attr('id', 'leftwing' + id).attr('x1', rx(lowerarm)).attr('y1', 55).attr('x2', rx(r) ).attr('y2', 55).attr('lowerarm', lowerarm).attr('stroke', lightGreen).attr('stroke-width', 3).attr('visibility', 'hidden');
+      svgD.append('line').attr('class', 'rsamplewing').attr('id', 'rightwing' + id).attr('x1', rx(r)).attr('y1', 55).attr('x2', rx(upperarm) ).attr('y2', 55).attr('upperarm', upperarm).attr('stroke', lightGreen).attr('stroke-width', 3).attr('visibility', 'hidden');
+  
+      svgD.append('circle').attr('class', 'rsampleblob').attr('id', 'r' + id).attr('r', r).attr('cx', rx(r)).attr('cy', 55).attr('r', dropSize).attr('stroke', 'black').attr('stroke-width', 1).attr('fill', lightGreen).attr('visibility', 'hidden');
+    }
 
     //add to blobs array for if redisplay needed on resize
     blobs.push(
@@ -956,6 +978,28 @@ $(function() {
       bloby += dropGap;
       if ( bloby >= heightD - 40 ) break;
     }
+  }
+
+  function recolour() {
+    //go through blobs and wings on the display
+    d3.selectAll('.rsampleblob').each(function() {
+      blobId = parseInt($(this).attr('id').substring(1));
+
+      lowerarm = d3.select('#leftwing'+blobId).attr('lowerarm');
+      upperarm = d3.select('#rightwing'+blobId).attr('upperarm');
+      
+      if (showcapture && (upperarm < rs || lowerarm > rs)) {
+        $(this).attr('fill', 'red');
+        d3.select('#leftwing'+blobId).attr('stroke', 'red');
+        d3.select('#rightwing'+blobId).attr('stroke', 'red');
+      }
+      else {
+        $(this).attr('fill', lightGreen);
+        d3.select('#leftwing'+blobId).attr('stroke', lightGreen);
+        d3.select('#rightwing'+blobId).attr('stroke', lightGreen);
+      }
+
+    })
   }
 
   /*-------------------Panel 3 Controls ------------------*/
@@ -1142,6 +1186,10 @@ $(function() {
     if (danceon) {
 
       SCA();
+      
+      $cifrom.text('-');
+      $cito.text('-');
+
       $ci.val(0.05).change();
       alpha = parseFloat($ci.val());
 
@@ -1172,10 +1220,14 @@ $(function() {
   $displayCIs.on('change', function() {
     displayCIs = $displayCIs.is(':checked');
     displayDance();
-    if (displayCIs) {
+    if (displayCIs && sampletaken) {
+      $cifrom.text(lastlowerarm.toFixed(2));  //? are these still the latest?
+      $cito.text(lastupperarm.toFixed(2));
       $percentCIcapture.text(percentCaptured.toFixed(2));
     }
     else {
+      $cifrom.text('-');
+      $cito.text('-');
       $percentCIcapture.text('-');
     }
   })
@@ -1205,7 +1257,9 @@ $(function() {
       //turn off capture of rho
       $showcapture.prop('checked', false);
       showcapture = false;
-      SCA();
+      recolour();
+      
+      SCA();  //why should this remove displayCIs?
     }
   })
 
@@ -1227,6 +1281,8 @@ $(function() {
     }
     showcapture = $showcapture.is(':checked');
     
+    recolour();
+
     if (showcapture) {
 
     } 
