@@ -20,11 +20,12 @@ Licence       GNU General Public Licence Version 3, 29 June 2007
 0.0.10  12 Oct 2020 #2 Added pop on/off and re-arranged items in panel 10
 0.0.11  12 Oct 2020 #5 Added in the dances code, but not yet aligned to spec
 0.0.12  13 Oct 2020 #8 Clear button spec
+0.0.13  13 Oct 2020 #6 Implemented spec as far as I can - no capture, no heap
 
 */
 //#endregion 
 
-let version = '0.0.12';
+let version = '0.0.13';
 
 let testing = false;
 
@@ -94,7 +95,7 @@ $(function() {
   // Panel 1 N1
   
   let $N1slider;
-  let N1 = 4;
+  let N1 = 50;
   const $N1val = $('#N1val');
   $N1val.val(N1.toFixed(0));
   const $N1nudgebackward = $('#N1nudgebackward');
@@ -131,7 +132,7 @@ $(function() {
   // Panel 4 Display features
 
   const $displaypopn = $('#displaypopn')
-  let displaypopn = false;
+  let displaypopn = true;
 
   const $displayr = $('#displayr');
   let displayr = false;
@@ -256,6 +257,9 @@ $(function() {
   let sampletaken = false;  //to stop sample r being displayed when no sample taken
   let samplestaken = 0;     //count of samples taken
 
+  let captured = 0;
+  let percentCaptured = 0;
+
   //#endregion
 
   //breadcrumbs
@@ -286,10 +290,8 @@ $(function() {
       $latestsamplesection.show();
       $CIsection.show();
       $capturesection.show();
-
-      
-
     }
+
     //set up an initial background scatters
     backgroundScatters();
     
@@ -306,6 +308,9 @@ $(function() {
     setTooltips();
 
     clear();
+
+    //initial take a sample
+    takeSample();
   }
 
  
@@ -318,7 +323,7 @@ $(function() {
       type: 'single',
       min: 0,
       max: 300,
-      from: 4,
+      from: 50,
       step: 1,
       prettify: prettify0,
       //on slider handles change
@@ -394,28 +399,26 @@ $(function() {
 
     backgroundScatters();
     displayBackgroundScatters();
+
+    if (sampletaken) {
+      createScatters();
+      drawScatterGraph();
+      statistics();
+      displayStatistics();
+    }
+
+    if (danceon && displaylinetomarkrho) drawrholine();
   }
 
 
   //set everything to a default state.
   function clear() {
     Fhalt = false;
-    sampletaken = false;
-    samplestaken = 0;
-
-    //set sliders to initial
-    //N1 = 4;
-    //$N1val.text(N1.toFixed(0));
-
-    //rs = 0.5;
-    //r  = 0.5;  //should only really be set after a sample is taken
 
     alpha = parseFloat($ci.val()); 
 
-    //$rval.text(rs.toFixed(2).toString().replace('0.', '.'));    
-
     $numbersamplestaken.text(0);
-    $percentCIcapture.text(0.0);
+    $percentCIcapture.text('-');
 
     $labelx.hide();
     $labely.hide();
@@ -429,8 +432,29 @@ $(function() {
 
     if (displaypopn) displayBackgroundScatters();
 
-    clearDance();
+    clearDance();  //also clears blobs and capture statistics
 
+    if (danceon && displaylinetomarkrho) drawrholine();
+
+  }
+
+  function SCA() {
+    stop();
+
+    $displayCIs.prop('checked', false);
+    displayCIs = false;
+    $cifrom.text('-');
+    $cito.text('-');
+
+    $displaylinetomarkrho.prop('checked', false);
+    displaylinetomarkrho = false;
+
+    $showcapture.prop('checked', false);
+    showcapture = false;
+
+    $showrheap.prop('checked', false);
+    showrheap = false;
+    
   }
 
   function resize() {
@@ -591,10 +615,30 @@ $(function() {
     if (danceon) {
       samplestaken += 1;
       $numbersamplestaken.text(samplestaken);
-    }
-  //   createDance();
-  //   displayDance();
 
+      //work out percent capturing rho
+      //?? do we count capture if display CIs off???
+      if (true) {
+        if (lowerarm > rs) {
+
+        }
+        else if (upperarm < rs) {
+
+        }
+        else {
+          captured += 1;
+        }
+        percentCaptured = captured/samplestaken * 100;
+
+        if (displayCIs) {
+          $percentCIcapture.text(percentCaptured.toFixed(2));
+        }
+        else {
+          $percentCIcapture.text('-');
+        }
+      }
+
+    }
   }
 
   function createScatters() {
@@ -622,7 +666,7 @@ $(function() {
   }
 
   function drawScatterGraph() {
-    d3.selectAll('.scatters').remove();
+    clearScatterGraph();
     d3.selectAll('.rtext').remove();
     d3.selectAll('.ctm').remove();
     d3.selectAll('.regression').remove();
@@ -842,9 +886,14 @@ $(function() {
 
     blobs = [];
     id = 0;
-
+    
+    sampletaken = false;
     samplestaken = 0;
-    $numbersamplestaken.text(samplestaken);
+    captured     = 0;
+    capturedpcnt = 0;
+
+    $numbersamplestaken.text(0);
+    $percentCIcapture.text('-');
 
     $calculatedr.text('-'); 
     $latestsample.text('-');
@@ -1091,19 +1140,25 @@ $(function() {
     clearDance();
 
     if (danceon) {
+
+      SCA();
+      $ci.val(0.05).change();
+      alpha = parseFloat($ci.val());
+
       $displayD.show();
 
       $latestsamplesection.show();
       $CIsection.show();
-      $capturesection.show();      
+      $capturesection.show();   
+
     }
     else {
+
       $displayD.hide();
 
       $latestsamplesection.hide();
       $CIsection.hide();
       $capturesection.hide();
-
 
     }
   })
@@ -1117,6 +1172,12 @@ $(function() {
   $displayCIs.on('change', function() {
     displayCIs = $displayCIs.is(':checked');
     displayDance();
+    if (displayCIs) {
+      $percentCIcapture.text(percentCaptured.toFixed(2));
+    }
+    else {
+      $percentCIcapture.text('-');
+    }
   })
 
   //Select confidence interval % and alpha
@@ -1124,6 +1185,10 @@ $(function() {
     alpha = parseFloat($ci.val()); 
 
     //***************do some redisplay and recalc stuff
+    SCA();  
+    clearScatterGraph();
+    clearDance();
+
   });
 
 
@@ -1131,16 +1196,51 @@ $(function() {
 
   $displaylinetomarkrho.on('change', function() {
     displaylinetomarkrho = $displaylinetomarkrho.is(':checked');
+    if (displaylinetomarkrho) {
+      drawrholine();
+    }
+    else {
+      removerholine();
 
+      //turn off capture of rho
+      $showcapture.prop('checked', false);
+      showcapture = false;
+      SCA();
+    }
   })
 
+  function drawrholine() {
+    removerholine();
+    svgD.append('line').attr('class', 'rholine').attr('x1', rx(rs)).attr('y1', 45).attr('x2', rx(rs) ).attr('y2', heightD-40).attr('stroke', 'blue').attr('stroke-width', 2);
+    svgD.append('text').text('\u03C1').attr('class', 'rholine').attr('x', rx(rs)).attr('y', heightD - 10).attr('text-anchor', 'start').attr('fill', 'blue').style('font-size', '1.5rem').style('font-weight', 'bold').style('font-style', 'italic');
+  }
+
+  function removerholine() {
+    d3.selectAll('.rholine').remove();
+  }
+
   $showcapture.on('change', function() {
+    if (!displaylinetomarkrho) {  //only if rho line on
+      $showcapture.prop('checked', false);
+      showcapture = false; 
+      return;  
+    }
     showcapture = $showcapture.is(':checked');
+    
+    if (showcapture) {
+
+    } 
+    else {
+      SCA();
+    }
+
 
   })
 
   $showrheap.on('change', function() {
     showrheap = $showrheap.is(':checked');
+
+    SCA();
 
   })
 
@@ -1241,10 +1341,6 @@ $(function() {
     $calculatedr.text(r.toFixed(2).toString().replace('0.', '.'));
     updater();
 
-    createScatters();
-    drawScatterGraph();
-    statistics();
-    displayStatistics();
   })
 
   $rnudgebackward.on('mousedown', function() {
@@ -1268,10 +1364,6 @@ $(function() {
     $calculatedr.text(r.toFixed(2).toString().replace('0.', '.'));
     updater();
 
-    createScatters();
-    drawScatterGraph();
-    statistics();
-    displayStatistics();
   }
 
   $rnudgeforward.on('mousedown', function() {
@@ -1295,10 +1387,6 @@ $(function() {
     $calculatedr.text(r.toFixed(2).toString().replace('0.', '.'));
     updater();
 
-    createScatters();
-    drawScatterGraph();
-    statistics();
-    displayStatistics();
   }
 //#endregion
 
