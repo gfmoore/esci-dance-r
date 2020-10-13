@@ -19,11 +19,12 @@ Licence       GNU General Public Licence Version 3, 29 June 2007
 0.0.9   10 Oct 2020 #5 Change the calculation of sample and remove the fix.
 0.0.10  12 Oct 2020 #2 Added pop on/off and re-arranged items in panel 10
 0.0.11  12 Oct 2020 #5 Added in the dances code, but not yet aligned to spec
+0.0.12  13 Oct 2020 #8 Clear button spec
 
 */
 //#endregion 
 
-let version = '0.0.11';
+let version = '0.0.12';
 
 let testing = false;
 
@@ -214,7 +215,7 @@ $(function() {
   // Panel 7 Dance of r values
 
   const $danceonoff = $('#danceonoff');
-  let danceonoff = false;
+  let danceon = false;
 
 
   // Panel 8 Latest sample
@@ -250,8 +251,10 @@ $(function() {
 
   const $numbersamplestaken = $('#numbersamplestaken');
 
-
   const $percentCIcapture = $('#percentCIcapture');
+
+  let sampletaken = false;  //to stop sample r being displayed when no sample taken
+  let samplestaken = 0;     //count of samples taken
 
   //#endregion
 
@@ -275,7 +278,7 @@ $(function() {
 
     //TESTING
     if (testing) {
-      danceonoff = true;
+      danceon = true;
       $danceonoff.prop("checked", true);
 
       //show dance panels
@@ -283,8 +286,13 @@ $(function() {
       $latestsamplesection.show();
       $CIsection.show();
       $capturesection.show();
-    }
 
+      
+
+    }
+    //set up an initial background scatters
+    backgroundScatters();
+    
     //get initial dimensions of #display div
     margin = {top: 15, right: 15, bottom: 0, left: 15};
 
@@ -293,11 +301,11 @@ $(function() {
 
     //setDisplaySize();
     setupSliders();
+    //set displayed r of sample to - initially and on clear (done in clear)
+
     setTooltips();
 
     clear();
-    //takeSample();
-
   }
 
  
@@ -348,12 +356,15 @@ $(function() {
         sliderinuse = true;  //don't update dslider in updater()
         updater();
         $rval.val(rs.toFixed(2).toString().replace('0.', '.'));
-        $calculatedr.text(r.toFixed(2).toString().replace('0.', '.'))
+        if (sampletaken) {
+          $calculatedr.text(r.toFixed(2).toString().replace('0.', '.'));
+        }
+        else {
+          //also clear samples from display (this might happen if N has changed)
+          clearDance();
+        }
 
-        createScatters();
-        drawScatterGraph();
-        statistics();
-        displayStatistics();
+
       }
     })
     $rslider = $('#rslider').data("ionRangeSlider");
@@ -389,18 +400,22 @@ $(function() {
   //set everything to a default state.
   function clear() {
     Fhalt = false;
+    sampletaken = false;
+    samplestaken = 0;
 
     //set sliders to initial
-    N1 = 4;
-    $N1val.text(N1.toFixed(0));
+    //N1 = 4;
+    //$N1val.text(N1.toFixed(0));
 
-    rs = 0.5;
-    r  = 0.5;
+    //rs = 0.5;
+    //r  = 0.5;  //should only really be set after a sample is taken
 
     alpha = parseFloat($ci.val()); 
 
-    $rval.text(rs.toFixed(2).toString().replace('0.', '.'));    
-    $calculatedr.text(r.toFixed(2).toString().replace('0.', '.')); 
+    //$rval.text(rs.toFixed(2).toString().replace('0.', '.'));    
+
+    $numbersamplestaken.text(0);
+    $percentCIcapture.text(0.0);
 
     $labelx.hide();
     $labely.hide();
@@ -412,17 +427,10 @@ $(function() {
     setDisplaySize();
     setupAxes();    
 
-    backgroundScatters();
     if (displaypopn) displayBackgroundScatters();
 
-    //clear all dances and heap
-    d3.selectAll('.rsampleblob').remove();
-    d3.selectAll('.rsamplewing').remove();
+    clearDance();
 
-    d3.selectAll('.rheap').remove(); 
-
-    id = 0;
-    blobs = [];
   }
 
   function resize() {
@@ -448,7 +456,7 @@ $(function() {
     rheight = $('#main').outerHeight(true);
     rwidth  = $('html').outerWidth(true)  - $('#leftpanel').outerWidth(true);
 
-    if (danceonoff) {
+    if (danceon) {
       widthS   = (rwidth - margin.left - margin.right);  
       heightS  = (rheight - margin.top - margin.bottom)/2;
 
@@ -577,6 +585,16 @@ $(function() {
 
     createDance();
     displayDance();
+
+    sampletaken = true;
+
+    if (danceon) {
+      samplestaken += 1;
+      $numbersamplestaken.text(samplestaken);
+    }
+  //   createDance();
+  //   displayDance();
+
   }
 
   function createScatters() {
@@ -608,8 +626,6 @@ $(function() {
     d3.selectAll('.rtext').remove();
     d3.selectAll('.ctm').remove();
     d3.selectAll('.regression').remove();
-    d3.selectAll('.marginals').remove();
-    d3.selectAll('.confidenceellipse').remove();
 
     //display scatters
     for (i = 0; i < scatters.length; i += 1) {
@@ -619,6 +635,12 @@ $(function() {
       else if (scatters[i].y > 3)   svgS.append('circle').attr('class', 'scatters').attr('cx', x(scatters[i].x)).attr('cy', y(3.05)).attr('r', scatterSize).attr('stroke', 'red').attr('stroke-width', 2).attr('fill', 'red'); 
       else  /*normal*/              svgS.append('circle').attr('class', 'scatters').attr('cx', x(scatters[i].x)).attr('cy', y(scatters[i].y)).attr('r', scatterSize).attr('stroke', 'blue').attr('stroke-width', 2).attr('fill', 'blue');
     }
+
+    $numbersamplestaken.text(samplestaken);
+  }
+
+  function clearScatterGraph() {
+    d3.selectAll('.scatters').remove();
   }
 
   function statistics() {
@@ -675,11 +697,16 @@ $(function() {
     $s1.text(Sx.toFixed(2).toString());
     $s2.text(Sy.toFixed(2).toString());
 
-    //display calculated r from data
-    $calculatedr.text(r.toFixed(2).toString().replace('0.', '.'));
+    //display calculated r from data  //check to see if NaN
 
-    $latestsample.text(r.toFixed(2).toString().replace('0.', '.'));
-
+    if (isNaN(r)) {
+      $calculatedr.text('-');
+      $latestsample.text('-');
+    }
+    else {
+      $calculatedr.text(r.toFixed(2).toString().replace('0.', '.'));
+      $latestsample.text(r.toFixed(2).toString().replace('0.', '.'));
+    }
     //display calculated r on graph
     if(displayr) { 
       svgS.append('text').text('r = ').attr('class', 'rtext').attr('x', 50).attr('y', y(2.8)).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.5rem').style('font-weight', 'bold').style('font-style', 'italic');
@@ -742,11 +769,13 @@ $(function() {
 
     if (displaypopn) {
       for (i = 0; i < backgroundN; i += 1) {
-        if      (backgroundscatters[i].x < -3)  svgS.append('circle').attr('class', 'backgroundscatters').attr('cx', x(-3.05)).attr('cy', y(backgroundscatters[i].y)).attr('r', scatterSize).attr('stroke', 'white').attr('stroke-width', 2).attr('fill', 'white');      
-        else if (backgroundscatters[i].x > 3)   svgS.append('circle').attr('class', 'backgroundscatters').attr('cx', x(3.05)).attr('cy', y(backgroundscatters[i].y)).attr('r', scatterSize).attr('stroke', 'white').attr('stroke-width', 2).attr('fill', 'white'); 
-        else if (backgroundscatters[i].y < -3)  svgS.append('circle').attr('class', 'backgroundscatters').attr('cx', x(backgroundscatters[i].x)).attr('cy', y(-3.05)).attr('r', scatterSize).attr('stroke', 'white').attr('stroke-width', 2).attr('fill', 'white'); 
-        else if (backgroundscatters[i].y > 3)   svgS.append('circle').attr('class', 'backgroundscatters').attr('cx', x(backgroundscatters[i].x)).attr('cy', y(3.05)).attr('r', scatterSize).attr('stroke', 'white').attr('stroke-width', 2).attr('fill', 'white'); 
-        else  /*normal*/              svgS.append('circle').attr('class', 'backgroundscatters').attr('cx', x(backgroundscatters[i].x)).attr('cy', y(backgroundscatters[i].y)).attr('r', scatterSize).attr('stroke', '#DEDEDE').attr('stroke-width', 1).attr('fill', 'white');
+        //if (backgroundscatters.length > 0) {  //might not have created them yet
+          if      (backgroundscatters[i].x < -3)  svgS.append('circle').attr('class', 'backgroundscatters').attr('cx', x(-3.05)).attr('cy', y(backgroundscatters[i].y)).attr('r', scatterSize).attr('stroke', 'white').attr('stroke-width', 2).attr('fill', 'white');      
+          else if (backgroundscatters[i].x > 3)   svgS.append('circle').attr('class', 'backgroundscatters').attr('cx', x(3.05)).attr('cy', y(backgroundscatters[i].y)).attr('r', scatterSize).attr('stroke', 'white').attr('stroke-width', 2).attr('fill', 'white'); 
+          else if (backgroundscatters[i].y < -3)  svgS.append('circle').attr('class', 'backgroundscatters').attr('cx', x(backgroundscatters[i].x)).attr('cy', y(-3.05)).attr('r', scatterSize).attr('stroke', 'white').attr('stroke-width', 2).attr('fill', 'white'); 
+          else if (backgroundscatters[i].y > 3)   svgS.append('circle').attr('class', 'backgroundscatters').attr('cx', x(backgroundscatters[i].x)).attr('cy', y(3.05)).attr('r', scatterSize).attr('stroke', 'white').attr('stroke-width', 2).attr('fill', 'white'); 
+          else  /*normal*/              svgS.append('circle').attr('class', 'backgroundscatters').attr('cx', x(backgroundscatters[i].x)).attr('cy', y(backgroundscatters[i].y)).attr('r', scatterSize).attr('stroke', '#DEDEDE').attr('stroke-width', 1).attr('fill', 'white');
+        //}
       }
     }
   }
@@ -805,6 +834,22 @@ $(function() {
 
   }
 
+  function clearDance() {
+    //clear all dances and heap
+    d3.selectAll('.rsampleblob').remove();
+    d3.selectAll('.rsamplewing').remove();
+    d3.selectAll('.rheap').remove(); 
+
+    blobs = [];
+    id = 0;
+
+    samplestaken = 0;
+    $numbersamplestaken.text(samplestaken);
+
+    $calculatedr.text('-'); 
+    $latestsample.text('-');
+  }
+
 
   function calculateFisherrtozTransformation() {
 
@@ -836,7 +881,7 @@ $(function() {
   }
 
   function redisplayDance() {
-    if (!danceonoff) return;
+    if (!danceon) return;
     
     //go through blobs array from the last one first
     bloby = 55;
@@ -877,15 +922,8 @@ $(function() {
     if (runFreely) stop();
     if (Fhalt) clear();  //Fhalt reset in clear()
 
-    createScatters();
-    drawScatterGraph();
-    statistics();
-    displayStatistics();
+    takeSample();
 
-    createDance();
-    displayDance();
-
-    //takeSample();
   })
 
   //run freely
@@ -1040,7 +1078,7 @@ $(function() {
 
   //hide or show the dances panel  
   $danceonoff.on('change', function() {
-    danceonoff = $danceonoff.is(':checked');
+    danceon = $danceonoff.is(':checked');
     setDisplaySize();
     setupAxes();
 
@@ -1049,10 +1087,10 @@ $(function() {
     drawScatterGraph();
     displayStatistics();
 
-    createDance();
-    displayDance();
+    clearScatterGraph();
+    clearDance();
 
-    if (danceonoff) {
+    if (danceon) {
       $displayD.show();
 
       $latestsamplesection.show();
@@ -1065,6 +1103,7 @@ $(function() {
       $latestsamplesection.hide();
       $CIsection.hide();
       $capturesection.hide();
+
 
     }
   })
@@ -1358,24 +1397,6 @@ $(function() {
   function lg(s) {
     console.log(s);
   }  
-
-  function print (value) {
-    const precision = 2
-    console.log(math.format(value, precision))
-  }
-
-  //keep display at top when scrolling
-  function boxtothetop() {
-    let windowTop = $(window).scrollTop();
-    let top = $('#boxHere').offset().top;
-    if (windowTop > top) {
-      $display.addClass('box');
-      $('#boxHere').height($display.outerHeight());
-    } else {
-      $display.removeClass('box');
-      $('#boxHere').height(0);
-    }
-  }
 
 })
 
