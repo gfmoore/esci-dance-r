@@ -25,13 +25,14 @@ Licence       GNU General Public Licence Version 3, 29 June 2007
 0.0.15  14 Oct 2020 Add test option for number of population points
 0.0.16  14 Oct 2020 #11 Revised the spec actions
 0.0.17  14 Oct 2020 #9 Sort out darker green for capture on
+0.1.0  14 Oct 2020 #10 heap code completed. Functionality now complete (I hope).
 
 */
 //#endregion 
 
-let version = '0.0.17';
+let version = '0.1.0';
 
-let testing = false;
+let testing = true;
 
 'use strict';
 $(function() {
@@ -306,11 +307,17 @@ $(function() {
       $CIsection.show();
       $capturesection.show();
 
-      $displayCIs.prop('checked', true);
-      displayCIs = true;
+      //$displayCIs.prop('checked', true);
+      //displayCIs = true;
 
       $displaylinetomarkrho.prop('checked', true);
       displaylinetomarkrho = true;
+
+      $showrheap.prop('checked', true);
+      showrheap = true;
+
+      speed = 50;
+      $speed.val(50);
     }
 
     //set up an initial background scatters
@@ -915,26 +922,24 @@ $(function() {
   }
 
   function createDance() {
+    let captured;
 
     //move down previous blobs and wings if any
-    doonce = true; //only check the first blob for adding to heap
     d3.selectAll('.rsampleblob').each(function() {
+      captured = $(this).attr('captured');
 
       blobId = parseInt($(this).attr('id').substring(1));
       bloby = parseInt($(this).attr('cy'));
       blobx = $(this).attr('cx');
 
-      //should I add to heap? Only need to look at the earliest entry in the list, if it is added to heap, need to continue to next item
-
+      //should I add to heap? If it is added to heap, then need to continue to next item. I'm sure this could be better structured!
       moveblob = true;
-
-      if (showrheap && doonce) {
-        if ( addtoheap(blobx) ) moveblob = false;
+      if (showrheap) {        
+        if ( addtoheap(blobId, blobx, bloby, captured) ) moveblob = false;
       }
 
       if (moveblob) {
-        doonce = false;
-      //now move items down 1 pixel at a time until done or goes past limit.  It's so fast though, you can't see the blob reach the bottom.
+        //now move items down 1 pixel at a time until done or goes past limit.  It's so fast though, you can't see the blob reach the bottom.
         for (let i = 0; i < dropGap; i += 1) {
           bloby += 1;
           if (bloby < heightD - 40) { //move the blob and wings
@@ -952,8 +957,17 @@ $(function() {
       }
     })
 
+    //TODO ?? I should check the new sample against any heap to see if should be displayed - that is the heap has reached the top of the displayable area
+
     //now deal with new sample
     calculateFisherrtozTransformation();  //provides lowerarm, upperarm 
+
+    if (upperarm < rs || lowerarm > rs) {
+      captured = 'false';
+    }
+    else {
+      captured = 'true';
+    }
 
     //display these values
     $cifrom.text(lowerarm.toFixed(2));
@@ -964,24 +978,24 @@ $(function() {
     lastupperarm = upperarm;
 
     //create wings for current sample
-    if (showcapture && (upperarm < rs || lowerarm > rs)) {
+    if (showcapture && captured === 'false') {
       svgD.append('line').attr('class', 'rsamplewing').attr('id', 'leftwing' + id).attr('x1', rx(lowerarm)).attr('y1', 55).attr('x2', rx(r) ).attr('y2', 55).attr('lowerarm', lowerarm).attr('stroke', 'red').attr('stroke-width', 3).attr('visibility', 'hidden');
       svgD.append('line').attr('class', 'rsamplewing').attr('id', 'rightwing' + id).attr('x1', rx(r)).attr('y1', 55).attr('x2', rx(upperarm) ).attr('y2', 55).attr('upperarm', upperarm).attr('stroke', 'red').attr('stroke-width', 3).attr('visibility', 'hidden');
   
-      svgD.append('circle').attr('class', 'rsampleblob').attr('id', 'r' + id).attr('r', r).attr('cx', rx(r)).attr('cy', 55).attr('r', dropSize).attr('stroke', 'black').attr('stroke-width', 1).attr('fill', 'red').attr('visibility', 'hidden');
+      svgD.append('circle').attr('class', 'rsampleblob').attr('id', 'r' + id).attr('r', r).attr('cx', rx(r)).attr('cy', 55).attr('r', dropSize).attr('stroke', 'black').attr('stroke-width', 1).attr('fill', 'red').attr('captured', captured).attr('visibility', 'hidden');
     }
     else if (showcapture) {
       svgD.append('line').attr('class', 'rsamplewing').attr('id', 'leftwing' + id).attr('x1', rx(lowerarm)).attr('y1', 55).attr('x2', rx(r) ).attr('y2', 55).attr('lowerarm', lowerarm).attr('stroke', darkGreen).attr('stroke-width', 3).attr('visibility', 'hidden');
       svgD.append('line').attr('class', 'rsamplewing').attr('id', 'rightwing' + id).attr('x1', rx(r)).attr('y1', 55).attr('x2', rx(upperarm) ).attr('y2', 55).attr('upperarm', upperarm).attr('stroke', darkGreen).attr('stroke-width', 3).attr('visibility', 'hidden');
   
-      svgD.append('circle').attr('class', 'rsampleblob').attr('id', 'r' + id).attr('r', r).attr('cx', rx(r)).attr('cy', 55).attr('r', dropSize).attr('stroke', 'black').attr('stroke-width', 1).attr('fill', darkGreen).attr('visibility', 'hidden');
+      svgD.append('circle').attr('class', 'rsampleblob').attr('id', 'r' + id).attr('r', r).attr('cx', rx(r)).attr('cy', 55).attr('r', dropSize).attr('stroke', 'black').attr('stroke-width', 1).attr('fill', darkGreen).attr('captured', captured).attr('visibility', 'hidden');
 
     }
     else {
       svgD.append('line').attr('class', 'rsamplewing').attr('id', 'leftwing' + id).attr('x1', rx(lowerarm)).attr('y1', 55).attr('x2', rx(r) ).attr('y2', 55).attr('lowerarm', lowerarm).attr('stroke', lightGreen).attr('stroke-width', 3).attr('visibility', 'hidden');
       svgD.append('line').attr('class', 'rsamplewing').attr('id', 'rightwing' + id).attr('x1', rx(r)).attr('y1', 55).attr('x2', rx(upperarm) ).attr('y2', 55).attr('upperarm', upperarm).attr('stroke', lightGreen).attr('stroke-width', 3).attr('visibility', 'hidden');
   
-      svgD.append('circle').attr('class', 'rsampleblob').attr('id', 'r' + id).attr('r', r).attr('cx', rx(r)).attr('cy', 55).attr('r', dropSize).attr('stroke', 'black').attr('stroke-width', 1).attr('fill', lightGreen).attr('visibility', 'hidden');
+      svgD.append('circle').attr('class', 'rsampleblob').attr('id', 'r' + id).attr('r', r).attr('cx', rx(r)).attr('cy', 55).attr('r', dropSize).attr('stroke', 'black').attr('stroke-width', 1).attr('fill', lightGreen).attr('captured', captured).attr('visibility', 'hidden');
     }
 
     //add to blobs array for if redisplay needed on resize
@@ -1003,21 +1017,72 @@ $(function() {
     let buckets;
 
     heap = [];
+    //use real world coordinates not pixels, needs a little extra searching through array objects, but maybe easier to position heap.
+
     //create an empty heap array,  get width of display area and divide by size of sample to give number of buckets
-    buckets = widthD / dropSize;
-    for (let n = 0; n < buckets; n += 1) {
-      heap.push(0);
-    }
+    // buckets = parseInt( (rx(3) - rx(-3)) / dropSize );
+    // for (let n = 0; n < buckets; n += 1) {
+    //   heap.push(0);
+    // }
 
     d3.selectAll('.heap').remove();
   }
 
-  function addtoheap(blobx) {
+  function addtoheap(blobId, blobx, bloby, captured) {
     //now look at this blob, compare it with the heap array and decide if to add it or ignore
+    
+    let barh;
+    let f;
+    let xpos;
+    let found;
+    let colour = d3.select('#r'+blobId).attr('fill');
 
-    heap[parseInt(blobx * dropSize)] += 1;  //increase frequency
+    //get integer position for blob in terms of buckets
+    xpos = parseInt(blobx/(2*dropSize))
 
-    return false;  //not added to heap
+    //now scan through heap (array of objects) looking for an existing xpos and get current frequency
+    f = 0;
+    for (let posx = 0; posx < heap.length; posx += 1) {
+      if (heap[posx].x === xpos) {
+        f = heap[posx].f;
+        break;
+      }
+    }
+
+    //how 'high' is the 'bar' at this point?
+    barh = (heightD - 45) - ( (f+1) * 2 * dropSize );
+
+    //if the blob is below the top of bar height
+    if (bloby >= barh) {  
+      //increase the frequency of the heap at that point      
+      f += 1;
+
+      found = false;
+      for (let posx = 0; posx < heap.length; posx += 1) {
+        if (heap[posx].x === xpos) {
+          heap[posx].f += 1;
+          found = true;
+          break;
+        }
+      }
+      if (!found) heap.push({x: xpos, f: 1});  //add a new entry to heap array
+  
+      //add a heap blob, but checked against top of displayable area
+      if (barh > 55) {
+        //now color according to missed or captured
+        svgD.append('circle').attr('class', 'rheap').attr('cx', (xpos * 2*dropSize) + dropSize).attr('cy', barh + 2*dropSize).attr('r', dropSize).attr('stroke', 'black').attr('stroke-width', 1).attr('fill', colour).attr('captured', captured);
+      }
+
+      //remove the drop blob and wings
+      d3.select('#leftwing'+blobId).remove();
+      d3.select('#rightwing'+blobId).remove();
+      d3.select('#r'+blobId).remove();
+
+      return true; //item added to heap and removed from dance
+    }
+    else {
+      return false; //not added to heap
+    }
   }
 
   function clearDance() {
@@ -1101,6 +1166,8 @@ $(function() {
   }
 
   function recolour() {
+    let captured;
+
     //go through blobs and wings on the display
     d3.selectAll('.rsampleblob').each(function() {
       blobId = parseInt($(this).attr('id').substring(1));
@@ -1123,6 +1190,24 @@ $(function() {
         d3.select('#rightwing'+blobId).attr('stroke', lightGreen);
       }
 
+    })
+
+    //now go through heap and colour as required
+    d3.selectAll('.rheap').each(function() {
+      captured = $(this).attr('captured');
+      if (showrheap) {
+        if (showcapture) {
+          if (captured === 'false') {
+            $(this).attr('fill', 'red');
+          }
+          else {
+            $(this).attr('fill', darkGreen);
+          }
+        }
+        else {
+          $(this).attr('fill', lightGreen);
+        }
+      }
     })
   }
 
@@ -1188,8 +1273,10 @@ $(function() {
   $displaypopn.on('change', function() {
     displaypopn = $displaypopn.is(':checked');
 
-    displayBackgroundScatters();  //will only display if displaypopn = true
-    drawScatterGraph();
+    if (sampletaken) {
+      displayBackgroundScatters();  //will only display if displaypopn = true
+      drawScatterGraph();
+    }
     statistics();
     displayStatistics();
   })
@@ -1409,9 +1496,10 @@ $(function() {
       //turn off capture of rho
       $showcapture.prop('checked', false);
       showcapture = false;
+
       recolour();
-      
     }
+
   })
 
   function drawrholine() {
@@ -1431,22 +1519,19 @@ $(function() {
       return;  
     }
     showcapture = $showcapture.is(':checked');
-    
-    recolour();
 
     if (showcapture) {
 
     } 
     else {
       stop();
-      clear();
     }
 
+    recolour();
   })
 
   $showrheap.on('change', function() {
     showrheap = $showrheap.is(':checked');
-
     stop();
     clear();
 
