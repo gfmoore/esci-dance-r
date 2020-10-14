@@ -32,7 +32,7 @@ Licence       GNU General Public Licence Version 3, 29 June 2007
 
 let version = '0.1.0';
 
-let testing = true;
+let testing = false;
 
 'use strict';
 $(function() {
