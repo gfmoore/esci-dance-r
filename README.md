@@ -1,6 +1,6 @@
 # esci-dance-r
 
-## Current version 0.0.15
+## Current version 0.0.16
 
 You can see which version by hovering on the logo.
 

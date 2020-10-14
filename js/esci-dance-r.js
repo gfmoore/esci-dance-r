@@ -23,11 +23,12 @@ Licence       GNU General Public Licence Version 3, 29 June 2007
 0.0.13  13 Oct 2020 #6 Implemented spec as far as I can - no capture, no heap
 0.0.14  13 Oct 2020 #9 First implementation of capture of rho
 0.0.15  14 Oct 2020 Add test option for number of population points
+0.0.16  14 Oct 2020 #11 Revised the spec actions
 
 */
 //#endregion 
 
-let version = '0.0.15';
+let version = '0.0.16';
 
 let testing = false;
 
@@ -327,6 +328,13 @@ $(function() {
 
     clear();
 
+    $statistics1.hide();
+    $statistics1show.prop('checked', false);
+
+    $displaylines1.hide();
+    $displaylines1show.prop('checked', false);
+
+
     //initial take a sample
     takeSample();
   }
@@ -351,10 +359,6 @@ $(function() {
         updateN1();  //create scatter and update to
         $N1val.val(N1.toFixed(0));
 
-        createScatters();
-        drawScatterGraph();
-        statistics();
-        displayStatistics();
       },
       onFinish: function(data) {
         updateN1();
@@ -380,6 +384,7 @@ $(function() {
         $rval.val(rs.toFixed(2).toString().replace('0.', '.'));
         if (sampletaken) {
           $calculatedr.text(r.toFixed(2).toString().replace('0.', '.'));
+          $latestsample.text(r.toFixed(2).toString().replace('0.', '.'));
         }
         else {
           //also clear samples from display (this might happen if N has changed)
@@ -408,6 +413,19 @@ $(function() {
   function updateN1() {
     if (!sliderinuse) $N1slider.update({ from: N1 })
     sliderinuse = false;
+
+    if (danceon) {
+      clear();
+    }
+    else {
+      if (sampletaken) {
+        createScatters();
+        drawScatterGraph();
+      }
+      statistics();
+      displayStatistics();
+    }
+    
   }
 
   function updater() {
@@ -417,9 +435,14 @@ $(function() {
     backgroundScatters();
     displayBackgroundScatters();
 
-    if (sampletaken) {
-      createScatters();
-      drawScatterGraph();
+    if (danceon) {
+      clear();
+    }
+    else {
+      if (sampletaken) {
+        createScatters();
+        drawScatterGraph();
+      }
       statistics();
       displayStatistics();
     }
@@ -430,17 +453,24 @@ $(function() {
 
   //set everything to a default state.
   function clear() {
+    stop();
+
     Fhalt = false;
+
+    sampletaken = false;
 
     alpha = parseFloat($ci.val()); 
 
     $numbersamplestaken.text(0);
     $percentCIcapture.text('-');
 
+    $calculatedr.text('-');
+    $latestsample.text('-');
+
+
     $labelx.hide();
     $labely.hide();
-    $statistics1.hide();
-    $displaylines1.hide();
+
 
     speed = parseInt($speed.val());
 
@@ -453,26 +483,40 @@ $(function() {
 
     if (danceon && displaylinetomarkrho) drawrholine();
 
-    $displayCIs.prop('checked', false);
-    displayCIs = false;
+    // $displayCIs.prop('checked', false);
+    // displayCIs = false;
+    $m1.text('-');
+    $m2.text('-');
+    $s1.text('-');
+    $s2.text('-');
+
+    $corryxval.text('-');
+    $corrxyval.text('-');
+    $corrlineslopeval.text('-'); 
+
     $cifrom.text('-');
     $cito.text('-');
     $percentCIcapture.text('-');
+
+    //$displayr.prop('checked', false);
+    //d3.selectAll('.rtext').remove();
+    //starting to be too many hacks in this code
+    if (displayr) {
+      svgS.append('text').text('r = ').attr('class', 'rtext').attr('x', 50).attr('y', y(2.8)).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.5rem').style('font-weight', 'bold').style('font-style', 'italic');
+      svgS.append('text').text('-').attr('class', 'rtext').attr('x', 80).attr('y', y(2.8)).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.5rem').style('font-weight', 'bold');
+    }
+
+
+    // $displaylinetomarkrho.prop('checked', false);
+    // displaylinetomarkrho = false;
+
+    // $showcapture.prop('checked', false);
+    // showcapture = false;
 
     emptyHeap();
 
   }
 
-  function SCA() {
-    stop();
-
-    $displaylinetomarkrho.prop('checked', false);
-    displaylinetomarkrho = false;
-
-    $showcapture.prop('checked', false);
-    showcapture = false;
-
-  }
 
   function resize() {
     setDisplaySize();
@@ -620,6 +664,8 @@ $(function() {
   }
 
   function takeSample() {
+    sampletaken = true;
+
     createScatters();
     drawScatterGraph();
     statistics();
@@ -628,7 +674,7 @@ $(function() {
     createDance();
     displayDance();
 
-    sampletaken = true;
+
 
     if (danceon) {
       samplestaken += 1;
@@ -754,10 +800,18 @@ $(function() {
   function displayStatistics() {
 
     //display mean and sd values
-    $m1.text(Mx.toFixed(2).toString());
-    $m2.text(My.toFixed(2).toString());
-    $s1.text(Sx.toFixed(2).toString());
-    $s2.text(Sy.toFixed(2).toString());
+    if (sampletaken) {
+      $m1.text(Mx.toFixed(2).toString());
+      $m2.text(My.toFixed(2).toString());
+      $s1.text(Sx.toFixed(2).toString());
+      $s2.text(Sy.toFixed(2).toString());
+    }
+    else {
+      $m1.text('-');
+      $m2.text('-');
+      $s1.text('-');
+      $s2.text('-');
+    }
 
     //display calculated r from data  //check to see if NaN
 
@@ -766,13 +820,21 @@ $(function() {
       $latestsample.text('-');
     }
     else {
-      $calculatedr.text(r.toFixed(2).toString().replace('0.', '.'));
-      $latestsample.text(r.toFixed(2).toString().replace('0.', '.'));
+      if (sampletaken) {
+        $calculatedr.text(r.toFixed(2).toString().replace('0.', '.'));
+        $latestsample.text(r.toFixed(2).toString().replace('0.', '.'));
+      }
     }
     //display calculated r on graph
     if(displayr) { 
-      svgS.append('text').text('r = ').attr('class', 'rtext').attr('x', 50).attr('y', y(2.8)).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.5rem').style('font-weight', 'bold').style('font-style', 'italic');
-      svgS.append('text').text(r.toFixed(2).toString().replace('0.', '.')).attr('class', 'rtext').attr('x', 80).attr('y', y(2.8)).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.5rem').style('font-weight', 'bold');
+      if (sampletaken) {
+        svgS.append('text').text('r = ').attr('class', 'rtext').attr('x', 50).attr('y', y(2.8)).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.5rem').style('font-weight', 'bold').style('font-style', 'italic');
+        svgS.append('text').text(r.toFixed(2).toString().replace('0.', '.')).attr('class', 'rtext').attr('x', 80).attr('y', y(2.8)).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.5rem').style('font-weight', 'bold');
+      }
+      else {
+        svgS.append('text').text('r = ').attr('class', 'rtext').attr('x', 50).attr('y', y(2.8)).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.5rem').style('font-weight', 'bold').style('font-style', 'italic');
+        svgS.append('text').text('-').attr('class', 'rtext').attr('x', 80).attr('y', y(2.8)).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.5rem').style('font-weight', 'bold');
+      }
     }
 
     //need to create a clipping rectangle
@@ -781,30 +843,38 @@ $(function() {
     //svgS.append('rect').attr('class', 'test').attr('x', x(-3)).attr('y', y(3)).attr('width', x(3) - x(-3)).attr('height', y(-3) - y(3)).attr('stroke', 'black').attr('stroke-width', '0').attr('fill', 'rgb(255, 255, 0, 0.5)');
 
     //cross through means
-    if (displayctm) {
+    if (displayctm && sampletaken) {
       svgS.append('line').attr('class', 'ctm').attr('x1', x(Mx)).attr('y1', y(-3)).attr('x2', x(Mx) ).attr('y2', y(3)).attr('stroke', 'black').attr('stroke-width', 1).style('stroke-dasharray', ('3, 3'));
       svgS.append('line').attr('class', 'ctm').attr('x1', x(-3)).attr('y1', y(My)).attr('x2', x(3)).attr('y2', y(My)).attr('stroke', 'black').attr('stroke-width', 1).style('stroke-dasharray', ('3, 3'));
     }
 
-    $corryxval.text((betayonx).toFixed(2).toString().replace('0.', '.'));
-    $corrxyval.text((betaxonyinverse).toFixed(2).toString().replace('0.', '.'));
-    $corrlineslopeval.text((betacl).toFixed(2).toString().replace('0.', '.')); 
+    if (sampletaken) {
+      $corryxval.text((betayonx).toFixed(2).toString().replace('0.', '.'));
+      $corrxyval.text((betaxonyinverse).toFixed(2).toString().replace('0.', '.'));
+      $corrlineslopeval.text((betacl).toFixed(2).toString().replace('0.', '.')); 
+    }
+    else {
+      $corryxval.text('-');
+      $corrxyval.text('-');
+      $corrlineslopeval.text('-'); 
+    }
 
     //corryx = true;
-    if (corryx) {
-      svgS.append('line').attr('class', 'regression').attr('x1', x(-3)).attr('y1', y(yvalueyxA)).attr('x2', x(3) ).attr('y2', y(yvalueyxB)).attr('stroke', 'blue').attr('stroke-width', 1).attr('clip-path', 'url(#mask)');
-    }
+    if (sampletaken) {
+      if (corryx) {
+        svgS.append('line').attr('class', 'regression').attr('x1', x(-3)).attr('y1', y(yvalueyxA)).attr('x2', x(3) ).attr('y2', y(yvalueyxB)).attr('stroke', 'blue').attr('stroke-width', 1).attr('clip-path', 'url(#mask)');
+      }
 
-    //corrxy = true;
-    if (corrxy) {
-      svgS.append('line').attr('class', 'regression').attr('x1', x(xvaluexyA)).attr('y1', y(-3)).attr('x2', x(xvaluexyB) ).attr('y2', y(3)).attr('stroke', 'red').attr('stroke-width', 1).attr('clip-path', 'url(#mask)');
-    }
+      //corrxy = true;
+      if (corrxy) {
+        svgS.append('line').attr('class', 'regression').attr('x1', x(xvaluexyA)).attr('y1', y(-3)).attr('x2', x(xvaluexyB) ).attr('y2', y(3)).attr('stroke', 'red').attr('stroke-width', 1).attr('clip-path', 'url(#mask)');
+      }
 
-    //corrlineslope = true;
-    if (corrlineslope) {
-      svgS.append('line').attr('class', 'regression').attr('x1', x(-3) ).attr('y1', y(yvaluecl1) ).attr('x2', x(3) ).attr('y2', y(yvaluecl2) ).attr('stroke', 'black').attr('stroke-width', 1).attr('clip-path', 'url(#mask)');
+      //corrlineslope = true;
+      if (corrlineslope) {
+        svgS.append('line').attr('class', 'regression').attr('x1', x(-3) ).attr('y1', y(yvaluecl1) ).attr('x2', x(3) ).attr('y2', y(yvaluecl2) ).attr('stroke', 'black').attr('stroke-width', 1).attr('clip-path', 'url(#mask)');
+      }
     }
-    
   }
 
   function backgroundScatters() {
@@ -1114,9 +1184,11 @@ $(function() {
 
   $displayr.on('change', function() {
     displayr = $displayr.is(':checked');
-
+    d3.selectAll('.rtext').remove();
     //dont recreate scatters
-    drawScatterGraph();
+    if (sampletaken) {
+      drawScatterGraph();
+    }
     statistics();
     displayStatistics();
   })
@@ -1125,7 +1197,9 @@ $(function() {
     displayctm = $displayctm.is(':checked');
 
     //don't recreate scatters
-    drawScatterGraph();
+    if (sampletaken) {
+      drawScatterGraph();
+    }
     statistics();
     displayStatistics();
   })
@@ -1175,9 +1249,11 @@ $(function() {
       corrlineslope = false;
 
       //don't recreate scatters
-      drawScatterGraph();
+      if (sampletaken) {
+        drawScatterGraph();
+      }
       statistics();
-      displayStatistics();
+      displayStatistics();      
     }
   })
 
@@ -1185,27 +1261,33 @@ $(function() {
     corryx = $corryx.is(':checked');
 
     //don't recreate scatters
-    drawScatterGraph();
+    if (sampletaken) {
+      drawScatterGraph();
+    }
     statistics();
-    displayStatistics();
+    displayStatistics();    
   })
 
   $corrxy.on('change', function() {
     corrxy = $corrxy.is(':checked');
 
     //don't recreate scatters
-    drawScatterGraph();
+    if (sampletaken) {
+      drawScatterGraph();
+    }
     statistics();
-    displayStatistics();
+    displayStatistics();    
   })
 
   $corrlineslope.on('change', function() {
     corrlineslope = $corrlineslope.is(':checked');
 
     //don't recreate scatters
-    drawScatterGraph();
+    if (sampletaken) {
+      drawScatterGraph();
+    }
     statistics();
-    displayStatistics();
+    displayStatistics();    
   })
 
 
@@ -1227,10 +1309,16 @@ $(function() {
 
     if (danceon) {
 
-      SCA();
+      stop();
+      //$displaylinetomarkrho.prop('checked', false);
+      //displaylinetomarkrho = false;
+  
+      //$showcapture.prop('checked', false);
+      //showcapture = false;
 
-      $showrheap.prop('checked', false);
-      showrheap = false;
+
+      //$showrheap.prop('checked', false);
+      //showrheap = false;
 
       $cifrom.text('-');
       $cito.text('-');
@@ -1282,7 +1370,14 @@ $(function() {
     alpha = parseFloat($ci.val()); 
 
     //***************do some redisplay and recalc stuff
-    SCA();  
+    stop();
+
+    // $displaylinetomarkrho.prop('checked', false);
+    // displaylinetomarkrho = false;
+
+    // $showcapture.prop('checked', false);
+    // showcapture = false;
+
     clearScatterGraph();
     clearDance();
 
@@ -1304,7 +1399,6 @@ $(function() {
       showcapture = false;
       recolour();
       
-      SCA();  //why should this remove displayCIs?
     }
   })
 
@@ -1332,17 +1426,17 @@ $(function() {
 
     } 
     else {
-      SCA();
+      stop();
+      clear();
     }
-
 
   })
 
   $showrheap.on('change', function() {
     showrheap = $showrheap.is(':checked');
 
-    SCA();
-
+    stop();
+    clear();
 
   })
 
@@ -1430,6 +1524,7 @@ $(function() {
       rs = 0.5;
       $rval.val(rs.toFixed(2).toString().replace('0.', '.'));
       $calculatedr.text(r.toFixed(2).toString().replace('0.', '.'));
+      $latestsample.text(r.toFixed(2).toString().replace('0.', '.'));
       return;
     };
     rs = parseFloat($rval.val());
@@ -1441,6 +1536,7 @@ $(function() {
     }
     $rval.val(rs.toFixed(2).toString().replace('0.', '.'));
     $calculatedr.text(r.toFixed(2).toString().replace('0.', '.'));
+    $latestsample.text(r.toFixed(2).toString().replace('0.', '.'));
     updater();
 
   })
@@ -1464,6 +1560,7 @@ $(function() {
     if (rs < -1) rs = -1;
     $rval.val(rs.toFixed(2).toString().replace('0.', '.'));
     $calculatedr.text(r.toFixed(2).toString().replace('0.', '.'));
+    $latestsample.text(r.toFixed(2).toString().replace('0.', '.'));
     updater();
 
   }
@@ -1487,6 +1584,7 @@ $(function() {
     if (rs > 1) rs = 1;
     $rval.val(rs.toFixed(2).toString().replace('0.', '.'));
     $calculatedr.text(r.toFixed(2).toString().replace('0.', '.'));
+    $latestsample.text(r.toFixed(2).toString().replace('0.', '.'));
     updater();
 
   }
@@ -1588,6 +1686,7 @@ $(function() {
     console.log(s);
   }  
 
+  //temp ability to change pop size.
   $('#popsize').on('change', function() {
     backgroundN = parseInt($('#popsize').val());
     clear();
