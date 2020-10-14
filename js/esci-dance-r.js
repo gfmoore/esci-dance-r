@@ -22,11 +22,12 @@ Licence       GNU General Public Licence Version 3, 29 June 2007
 0.0.12  13 Oct 2020 #8 Clear button spec
 0.0.13  13 Oct 2020 #6 Implemented spec as far as I can - no capture, no heap
 0.0.14  13 Oct 2020 #9 First implementation of capture of rho
+0.0.15  14 Oct 2020 Add test option for number of population points
 
 */
 //#endregion 
 
-let version = '0.0.14';
+let version = '0.0.15';
 
 let testing = false;
 
@@ -264,6 +265,12 @@ $(function() {
   let lastlowerarm;
   let lastupperarm;
 
+  //heap stuff
+  let doonce = true;
+  let moveblob = true;
+
+  let heap = [];
+  let blobr;
 
   //#endregion
 
@@ -452,6 +459,8 @@ $(function() {
     $cito.text('-');
     $percentCIcapture.text('-');
 
+    emptyHeap();
+
   }
 
   function SCA() {
@@ -463,8 +472,6 @@ $(function() {
     $showcapture.prop('checked', false);
     showcapture = false;
 
-    $showrheap.prop('checked', false);
-    showrheap = false;
   }
 
   function resize() {
@@ -480,6 +487,7 @@ $(function() {
 
     redisplayDance();
 
+    //what do I do about the heap???
   }
 
   function setDisplaySize() {
@@ -837,30 +845,42 @@ $(function() {
   function createDance() {
 
     //move down previous blobs and wings if any
+    doonce = true; //only check the first blob for adding to heap
     d3.selectAll('.rsampleblob').each(function() {
 
       blobId = parseInt($(this).attr('id').substring(1));
       bloby = parseInt($(this).attr('cy'));
+      blobx = $(this).attr('cx');
 
-      //now move items down 1 pixel at a time until done or goes past limit.  It's so fast though, you can't see the blob reach the bottom.
-      for (let i = 0; i < dropGap; i += 1) {
-        bloby += 1;
-        if (bloby < heightD - 40) { //move the blob and wings if go past bottom
-          d3.select('#leftwing'+blobId).attr('y1', bloby).attr('y2', bloby);
-          d3.select('#rightwing'+blobId).attr('y1', bloby).attr('y2', bloby);
-          $(this).attr('cy', bloby);
-        }
-        else { //remove the blob and wings
-          d3.select('#leftwing'+blobId).remove();
-          d3.select('#rightwing'+blobId).remove();
-          $(this).remove();
-          break; //out of for loop I hope
-        }
+      //should I add to heap? Only need to look at the earliest entry in the list, if it is added to heap, need to continue to next item
+
+      moveblob = true;
+
+      if (showrheap && doonce) {
+        if ( addtoheap(blobx) ) moveblob = false;
       }
 
+      if (moveblob) {
+        doonce = false;
+      //now move items down 1 pixel at a time until done or goes past limit.  It's so fast though, you can't see the blob reach the bottom.
+        for (let i = 0; i < dropGap; i += 1) {
+          bloby += 1;
+          if (bloby < heightD - 40) { //move the blob and wings
+            d3.select('#leftwing'+blobId).attr('y1', bloby).attr('y2', bloby);
+            d3.select('#rightwing'+blobId).attr('y1', bloby).attr('y2', bloby);
+            $(this).attr('cy', bloby);
+          }
+          else { //remove the blob and wings
+            d3.select('#leftwing'+blobId).remove();
+            d3.select('#rightwing'+blobId).remove();
+            $(this).remove();
+            break; //out of for loop I hope
+          }
+        }
+      }
     })
 
-    
+    //now deal with new sample
     calculateFisherrtozTransformation();  //provides lowerarm, upperarm 
 
     //display these values
@@ -898,6 +918,28 @@ $(function() {
 
     id += 1;
 
+  }
+
+  function emptyHeap() {
+
+    let buckets;
+
+    heap = [];
+    //create an empty heap array,  get width of display area and divide by size of sample to give number of buckets
+    buckets = widthD / dropSize;
+    for (let n = 0; n < buckets; n += 1) {
+      heap.push(0);
+    }
+
+    d3.selectAll('.heap').remove();
+  }
+
+  function addtoheap(blobx) {
+    //now look at this blob, compare it with the heap array and decide if to add it or ignore
+
+    heap[parseInt(blobx * dropSize)] += 1;  //increase frequency
+
+    return false;  //not added to heap
   }
 
   function clearDance() {
@@ -1186,7 +1228,10 @@ $(function() {
     if (danceon) {
 
       SCA();
-      
+
+      $showrheap.prop('checked', false);
+      showrheap = false;
+
       $cifrom.text('-');
       $cito.text('-');
 
@@ -1297,6 +1342,7 @@ $(function() {
     showrheap = $showrheap.is(':checked');
 
     SCA();
+
 
   })
 
@@ -1541,6 +1587,11 @@ $(function() {
   function lg(s) {
     console.log(s);
   }  
+
+  $('#popsize').on('change', function() {
+    backgroundN = parseInt($('#popsize').val());
+    clear();
+  })
 
 })
 
