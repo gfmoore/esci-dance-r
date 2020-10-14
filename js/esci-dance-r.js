@@ -24,11 +24,12 @@ Licence       GNU General Public Licence Version 3, 29 June 2007
 0.0.14  13 Oct 2020 #9 First implementation of capture of rho
 0.0.15  14 Oct 2020 Add test option for number of population points
 0.0.16  14 Oct 2020 #11 Revised the spec actions
+0.0.17  14 Oct 2020 #9 Sort out darker green for capture on
 
 */
 //#endregion 
 
-let version = '0.0.16';
+let version = '0.0.17';
 
 let testing = false;
 
@@ -94,6 +95,7 @@ $(function() {
   //dances
   let id = 0;
   let lightGreen = 'lawngreen';
+  let darkGreen = '#00DF00';
 
   // Panel 1 N1
   
@@ -967,6 +969,12 @@ $(function() {
       svgD.append('line').attr('class', 'rsamplewing').attr('id', 'rightwing' + id).attr('x1', rx(r)).attr('y1', 55).attr('x2', rx(upperarm) ).attr('y2', 55).attr('upperarm', upperarm).attr('stroke', 'red').attr('stroke-width', 3).attr('visibility', 'hidden');
   
       svgD.append('circle').attr('class', 'rsampleblob').attr('id', 'r' + id).attr('r', r).attr('cx', rx(r)).attr('cy', 55).attr('r', dropSize).attr('stroke', 'black').attr('stroke-width', 1).attr('fill', 'red').attr('visibility', 'hidden');
+    }
+    else if (showcapture) {
+      svgD.append('line').attr('class', 'rsamplewing').attr('id', 'leftwing' + id).attr('x1', rx(lowerarm)).attr('y1', 55).attr('x2', rx(r) ).attr('y2', 55).attr('lowerarm', lowerarm).attr('stroke', darkGreen).attr('stroke-width', 3).attr('visibility', 'hidden');
+      svgD.append('line').attr('class', 'rsamplewing').attr('id', 'rightwing' + id).attr('x1', rx(r)).attr('y1', 55).attr('x2', rx(upperarm) ).attr('y2', 55).attr('upperarm', upperarm).attr('stroke', darkGreen).attr('stroke-width', 3).attr('visibility', 'hidden');
+  
+      svgD.append('circle').attr('class', 'rsampleblob').attr('id', 'r' + id).attr('r', r).attr('cx', rx(r)).attr('cy', 55).attr('r', dropSize).attr('stroke', 'black').attr('stroke-width', 1).attr('fill', darkGreen).attr('visibility', 'hidden');
 
     }
     else {
@@ -1105,6 +1113,10 @@ $(function() {
         d3.select('#leftwing'+blobId).attr('stroke', 'red');
         d3.select('#rightwing'+blobId).attr('stroke', 'red');
       }
+      else if (showcapture) {
+        $(this).attr('fill', darkGreen);
+        d3.select('#leftwing'+blobId).attr('stroke', darkGreen);
+        d3.select('#rightwing'+blobId).attr('stroke', darkGreen);      }      
       else {
         $(this).attr('fill', lightGreen);
         d3.select('#leftwing'+blobId).attr('stroke', lightGreen);
