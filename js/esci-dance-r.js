@@ -30,7 +30,7 @@ Licence       GNU General Public Licence Version 3, 29 June 2007
 0.1.1   15 Oct 2020 #7  Population display fixed.
 0.1.2   15 Oct 2020 #11 Fixed population nudge bars generating sample.
 0.1.3   15 Oct 2020 #9  Fixed bugs on change to ci and what to display
-0.1.4   15 Oct 2020 #?  On resize just stop and clear
+0.1.4   15 Oct 2020 #12  On resize just stop and clear
 
 */
 //#endregion 
