@@ -25,14 +25,16 @@ Licence       GNU General Public Licence Version 3, 29 June 2007
 0.0.15  14 Oct 2020 Add test option for number of population points
 0.0.16  14 Oct 2020 #11 Revised the spec actions
 0.0.17  14 Oct 2020 #9 Sort out darker green for capture on
+
 0.1.0   14 Oct 2020 #10 heap code completed. Functionality now complete (I hope).
 0.1.1   15 Oct 2020 #7  Population display fixed.
 0.1.2   15 Oct 2020 #11 Fixed population nudge bars generating sample.
+0.1.3   15 Oct 2020 #9  Fixed bugs on change to ci and what to display
 
 */
 //#endregion 
 
-let version = '0.1.2';
+let version = '0.1.3';
 
 let testing = false;
 
@@ -256,7 +258,7 @@ $(function() {
   let showcapture = false;
 
   const $showrheap = $('#showrheap');
-  let showheap = false;
+  let showrheap = false;
 
   const $numbersamplestaken = $('#numbersamplestaken');
 
@@ -470,20 +472,8 @@ $(function() {
 
     sampletaken = false;
 
-    alpha = parseFloat($ci.val()); 
-
-    $numbersamplestaken.text(0);
-    $percentCIcapture.text('-');
-
-    $calculatedr.text('-');
-    $latestsample.text('-');
-
-
     $labelx.hide();
     $labely.hide();
-
-
-    speed = parseInt($speed.val());
 
     setDisplaySize();
     setupAxes();    
@@ -494,6 +484,8 @@ $(function() {
 
     if (danceon && displaylinetomarkrho) drawrholine();
 
+    speed = parseInt($speed.val());
+
     $m1.text('-');
     $m2.text('-');
     $s1.text('-');
@@ -503,8 +495,14 @@ $(function() {
     $corrxyval.text('-');
     $corrlineslopeval.text('-'); 
 
+    alpha = parseFloat($ci.val()); 
+
+    $calculatedr.text('-');
+    $latestsample.text('-');
+
     $cifrom.text('-');
     $cito.text('-');
+    $numbersamplestaken.text(0);
     $percentCIcapture.text('-');
 
     //starting to be too many hacks in this code
@@ -674,8 +672,6 @@ $(function() {
     createDance();
     displayDance();
 
-
-
     if (danceon) {
       samplestaken += 1;
       $numbersamplestaken.text(samplestaken);
@@ -694,7 +690,8 @@ $(function() {
         }
         percentCaptured = captured/samplestaken * 100;
 
-        if (displayCIs) {
+        //if (displayCIs) {
+        if (showcapture) {
           $percentCIcapture.text(percentCaptured.toFixed(2));
         }
         else {
@@ -961,9 +958,14 @@ $(function() {
     }
 
     //display these values
-    $cifrom.text(lowerarm.toFixed(2));
-    $cito.text(upperarm.toFixed(2));
-
+    if (displayCIs) {
+      $cifrom.text(lowerarm.toFixed(2));
+      $cito.text(upperarm.toFixed(2));
+    }
+    else {
+      $cifrom.text('-');
+      $cito.text('-');
+    }
     //just remember the last lowerarm, upperarm for use with displayCIs on off
     lastlowerarm = lowerarm;
     lastupperarm = upperarm;
@@ -1005,16 +1007,7 @@ $(function() {
 
   function emptyHeap() {
 
-    let buckets;
-
     heap = [];
-    //use real world coordinates not pixels, needs a little extra searching through array objects, but maybe easier to position heap.
-
-    //create an empty heap array,  get width of display area and divide by size of sample to give number of buckets
-    // buckets = parseInt( (rx(3) - rx(-3)) / dropSize );
-    // for (let n = 0; n < buckets; n += 1) {
-    //   heap.push(0);
-    // }
 
     d3.selectAll('.heap').remove();
   }
@@ -1204,7 +1197,7 @@ $(function() {
 
 
   function redisplayHeap() {
-    
+
   }
 
   /*-------------------Panel 3 Controls ------------------*/
@@ -1453,7 +1446,8 @@ $(function() {
     if (displayCIs && sampletaken) {
       $cifrom.text(lastlowerarm.toFixed(2));  //? are these still the latest?
       $cito.text(lastupperarm.toFixed(2));
-      $percentCIcapture.text(percentCaptured.toFixed(2));
+      //$percentCIcapture.text(percentCaptured.toFixed(2));
+      $percentCIcapture.text('-');
     }
     else {
       $cifrom.text('-');
@@ -1466,17 +1460,11 @@ $(function() {
   $ci.on('change', function() {
     alpha = parseFloat($ci.val()); 
 
-    //***************do some redisplay and recalc stuff
     stop();
-
-    // $displaylinetomarkrho.prop('checked', false);
-    // displaylinetomarkrho = false;
-
-    // $showcapture.prop('checked', false);
-    // showcapture = false;
 
     clearScatterGraph();
     clearDance();
+    emptyHeap();
 
   });
 
@@ -1519,10 +1507,11 @@ $(function() {
     showcapture = $showcapture.is(':checked');
 
     if (showcapture) {
-
+      $percentCIcapture.text(percentCaptured.toFixed(2));
     } 
     else {
-      stop();
+      $percentCIcapture.text('-');
+      //stop();
     }
 
     recolour();
