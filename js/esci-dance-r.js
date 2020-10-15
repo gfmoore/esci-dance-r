@@ -31,11 +31,12 @@ Licence       GNU General Public Licence Version 3, 29 June 2007
 0.1.2   15 Oct 2020 #11 Fixed population nudge bars generating sample.
 0.1.3   15 Oct 2020 #9  Fixed bugs on change to ci and what to display
 0.1.4   15 Oct 2020 #12  On resize just stop and clear
+0.1.5   15 Oct 2020 #12  Code added to redisplay heap etc on resize
 
 */
 //#endregion 
 
-let version = '0.1.4';
+let version = '0.1.5';
 
 let testing = false;
 
@@ -318,14 +319,17 @@ $(function() {
       //$displayCIs.prop('checked', true);
       //displayCIs = true;
 
+      $displaypopn.prop('checked', false);
+      displaypopn = false;
+
       $displaylinetomarkrho.prop('checked', true);
       displaylinetomarkrho = true;
 
       $showrheap.prop('checked', true);
       showrheap = true;
 
-      speed = 50;
-      $speed.val(50);
+      speed = 0;
+      $speed.val(0);
     }
 
     //set up an initial background scatters
@@ -526,14 +530,18 @@ $(function() {
     displayBackgroundScatters();
     
     //don't recreate scatters here
-    drawScatterGraph();
+    if (sampletaken) drawScatterGraph();
     statistics();
     displayStatistics();
 
-    redisplayDance();
+    if (displaylinetomarkrho) {
+      drawrholine();
+    }
+    else {
+      removerholine();
+    }
 
-    //what do I do about the heap???
-    redisplayHeap();
+    redisplayDanceandHeap();
   }
 
   function setDisplaySize() {
@@ -992,13 +1000,14 @@ $(function() {
       svgD.append('circle').attr('class', 'rsampleblob').attr('id', 'r' + id).attr('rr', r).attr('cx', rx(r)).attr('cy', 55).attr('r', dropSize).attr('stroke', 'black').attr('stroke-width', 1).attr('fill', lightGreen).attr('captured', capturedblob).attr('visibility', 'hidden');
     }
 
-    //add to blobs array for if redisplay needed on resize
+    //add to blobs array - if resize we use this to redisplay dance and heap
     blobs.push(
       {
         id: id,
         r: r,
         lowerarm: lowerarm,
-        upperarm: upperarm
+        upperarm: upperarm,
+        capturedblob: capturedblob 
       }
     )
 
@@ -1007,7 +1016,7 @@ $(function() {
   }
 
 
-  function addtoheap(blobId, blobx, rr, bloby, blob) {
+  function addtoheap(blobId, blobx, rr, bloby, capturedblob) {
     //now look at this blob, compare it with the heap array and decide if to add it or ignore
     
     let barh;
@@ -1027,6 +1036,8 @@ $(function() {
         break;
       }
     }
+
+/**XXXXXXXXXXXXXXXXXXXXXXXXXXXX problem with some heights not registering at test??????????? */
 
     //how 'high' is the 'bar' at this point?
     barh = (heightD - 45) - ( (f+1) * 2 * dropSize );
@@ -1162,71 +1173,161 @@ $(function() {
 
   function emptyHeap() {
     heap = [];
-    d3.selectAll('.heap').remove();
+    d3.selectAll('.rheap').remove();
   }
 
-  //for now just StopClear
-  function redisplayDance() {  //and maybe heap?
-    if (!danceon) return;
+  /*------------------------Re display dance and heap after a resize event-----------------------*/
+  function redisplayDanceandHeap() { 
+    if (!danceon) {
+      return;
+    }
+
+    //clear all dances and heap
+    d3.selectAll('.rsampleblob').remove();
+    d3.selectAll('.rsamplewing').remove();
+    d3.selectAll('.rheap').remove(); 
+
+    heap = [];
     
-    //if resize, just clear display
-    stop();
-    clear();
-    return;
+    //go through blobs array which contains a history of all blobs
+    for (let i = 0; i <= blobs.length-1; i += 1) {
+      createDance2(blobs[i].r, blobs[i].id, blobs[i].lowerarm, blobs[i].upperarm, blobs[i].capturedblob);
+      displayDance();
+    }  
+  }
 
-    //go through blobs array from the last one first
-    bloby = 55;
-    for (let i = blobs.length-1; i >= 0; i -= 1) {
+  function createDance2(r, id, lowerarm, upperarm, samplecapturedblob) {
 
-      id = blobs[i].id;
-      r  = blobs[i].r;
-      lowerarm = blobs[i].lowerarm;
-      upperarm = blobs[i].upperarm;
+    //move down previous blobs and wings if any
+    d3.selectAll('.rsampleblob').each(function() {
+      capturedblob = $(this).attr('captured');
 
-      //create wings for current sample
-      if (displayCIs) {
-        svgD.append('line').attr('class', 'rsamplewing').attr('id', 'leftwing' + id).attr('x1', rx(lowerarm)).attr('y1', bloby).attr('x2', rx(r) ).attr('y2', bloby).attr('stroke', lightGreen).attr('stroke-width', 3).attr('visibility', 'visible');
-        svgD.append('line').attr('class', 'rsamplewing').attr('id', 'rightwing' + id).attr('x1', rx(r)).attr('y1', bloby).attr('x2', rx(upperarm) ).attr('y2', bloby).attr('stroke', lightGreen).attr('stroke-width', 3).attr('visibility', 'visible');
+      blobId = parseInt($(this).attr('id').substring(1));
+      bloby = parseInt($(this).attr('cy'));
+      blobx = $(this).attr('cx');
+      rr = $(this).attr('rr');  //this is correlation r stored in blob, can't be r as that is radius
+
+      //should I add to heap? If it is added to heap, then need to continue to next item. I'm sure this could be better structured!
+      moveblob = true;
+      if (showrheap) {        
+        if ( addtoheap2(blobId, blobx, rr, bloby, capturedblob) ) moveblob = false;
       }
-      else {
-        svgD.append('line').attr('class', 'rsamplewing').attr('id', 'leftwing' + id).attr('x1', rx(lowerarm)).attr('y1', bloby).attr('x2', rx(r) ).attr('y2', bloby).attr('stroke', lightGreen).attr('stroke-width', 3).attr('visibility', 'hidden');
-        svgD.append('line').attr('class', 'rsamplewing').attr('id', 'rightwing' + id).attr('x1', rx(r)).attr('y1', bloby).attr('x2', rx(upperarm) ).attr('y2', bloby).attr('stroke', lightGreen).attr('stroke-width', 3).attr('visibility', 'hidden');
+
+      if (moveblob) {
+        //now move items down 1 pixel at a time until done or goes past limit.  It's so fast though, you can't see the blob reach the bottom.
+        for (let i = 0; i < dropGap; i += 1) {
+          bloby += 1;
+          if (bloby < heightD - 40) { //move the blob and wings
+            d3.select('#leftwing'+blobId).attr('y1', bloby).attr('y2', bloby);
+            d3.select('#rightwing'+blobId).attr('y1', bloby).attr('y2', bloby);
+            $(this).attr('cy', bloby);
+          }
+          else { //remove the blob and wings
+            d3.select('#leftwing'+blobId).remove();
+            d3.select('#rightwing'+blobId).remove();
+            $(this).remove();
+            break; //out of for loop I hope
+          }
+        }
       }
+    })
 
-      //create blob for current sample
-      svgD.append('circle').attr('class', 'rsampleblob').attr('id', 'r' + id).attr('r', r).attr('cx', rx(r)).attr('cy', bloby).attr('r', dropSize).attr('stroke', 'black').attr('stroke-width', 1).attr('fill', lightGreen).attr('captured', capturedblob).attr('visibility', 'visible');
+    //now deal with new sample
 
-      bloby += dropGap;
-      if ( bloby >= heightD - 40 ) break;
+    //display these values
+    if (displayCIs) {
+      $cifrom.text(lowerarm.toFixed(2));
+      $cito.text(upperarm.toFixed(2));
+    }
+    else {
+      $cifrom.text('-');
+      $cito.text('-');
+    }
+    //just remember the last lowerarm, upperarm for use with displayCIs on off
+    lastlowerarm = lowerarm;
+    lastupperarm = upperarm;
+
+    //create wings for current sample
+    if (showcapture && samplecapturedblob === 'false') {
+      svgD.append('line').attr('class', 'rsamplewing').attr('id', 'leftwing' + id).attr('x1', rx(lowerarm)).attr('y1', 55).attr('x2', rx(r) ).attr('y2', 55).attr('lowerarm', lowerarm).attr('stroke', 'red').attr('stroke-width', 3).attr('visibility', 'hidden');
+      svgD.append('line').attr('class', 'rsamplewing').attr('id', 'rightwing' + id).attr('x1', rx(r)).attr('y1', 55).attr('x2', rx(upperarm) ).attr('y2', 55).attr('upperarm', upperarm).attr('stroke', 'red').attr('stroke-width', 3).attr('visibility', 'hidden');
+
+      svgD.append('circle').attr('class', 'rsampleblob').attr('id', 'r' + id).attr('rr', r).attr('cx', rx(r)).attr('cy', 55).attr('r', dropSize).attr('stroke', 'black').attr('stroke-width', 1).attr('fill', 'red').attr('captured', samplecapturedblob).attr('visibility', 'hidden');
+    }
+    else if (showcapture) {
+      svgD.append('line').attr('class', 'rsamplewing').attr('id', 'leftwing' + id).attr('x1', rx(lowerarm)).attr('y1', 55).attr('x2', rx(r) ).attr('y2', 55).attr('lowerarm', lowerarm).attr('stroke', darkGreen).attr('stroke-width', 3).attr('visibility', 'hidden');
+      svgD.append('line').attr('class', 'rsamplewing').attr('id', 'rightwing' + id).attr('x1', rx(r)).attr('y1', 55).attr('x2', rx(upperarm) ).attr('y2', 55).attr('upperarm', upperarm).attr('stroke', darkGreen).attr('stroke-width', 3).attr('visibility', 'hidden');
+
+      svgD.append('circle').attr('class', 'rsampleblob').attr('id', 'r' + id).attr('rr', r).attr('cx', rx(r)).attr('cy', 55).attr('r', dropSize).attr('stroke', 'black').attr('stroke-width', 1).attr('fill', darkGreen).attr('captured', samplecapturedblob).attr('visibility', 'hidden');
+
+    }
+    else {
+      svgD.append('line').attr('class', 'rsamplewing').attr('id', 'leftwing' + id).attr('x1', rx(lowerarm)).attr('y1', 55).attr('x2', rx(r) ).attr('y2', 55).attr('lowerarm', lowerarm).attr('stroke', lightGreen).attr('stroke-width', 3).attr('visibility', 'hidden');
+      svgD.append('line').attr('class', 'rsamplewing').attr('id', 'rightwing' + id).attr('x1', rx(r)).attr('y1', 55).attr('x2', rx(upperarm) ).attr('y2', 55).attr('upperarm', upperarm).attr('stroke', lightGreen).attr('stroke-width', 3).attr('visibility', 'hidden');
+
+      svgD.append('circle').attr('class', 'rsampleblob').attr('id', 'r' + id).attr('rr', r).attr('cx', rx(r)).attr('cy', 55).attr('r', dropSize).attr('stroke', 'black').attr('stroke-width', 1).attr('fill', lightGreen).attr('captured', samplecapturedblob).attr('visibility', 'hidden');
     }
   }
 
-  function redisplayHeap() {
-    //if resize event use the reheap array which contains the r and captured info for each heap item
-    //make sure heap display cleared
-    d3.selectAll('.heap').remove();
-    heap = [];
-    clear();
+  function addtoheap2(blobId, blobx, rr, bloby, capturedblob) {
+    //now look at this blob, compare it with the heap array and decide if to add it or ignore
+    
+    let barh;
+    let f;
+    let xpos;
+    let found;
+    let colour = d3.select('#r'+blobId).attr('fill');
 
+    //get integer position for blob in terms of buckets
+    xpos = parseInt(blobx/(2*dropSize))
 
-    //this is too complex in this way. Need to redo the whole dance.
-    // for (let i = 0; i < blobs.length; i += 1) {
-    //   lg( blobs[i] );
-    // }
+    //now scan through heap (array of objects) looking for an existing xpos and get current frequency
+    f = 0;
+    for (let posx = 0; posx < heap.length; posx += 1) {
+      if (heap[posx].x === xpos) {
+        f = heap[posx].f;
+        break;
+      }
+    }
 
-    //using heap is no good as position will be completely wrong - not enough detail blobs is no good either, need to use a different array.
-    // //uhm need to store real x
-    // for (let i = 0; i < heap.length; i += 1) {
-    //   //display the frequency as a number of blobs
-    //   barh = heightD - 45;
-    //   for (let j = 0; j < heap[i].f; j += 1) {
-    //     xpos = parseInt(rx(heap[i].rr)/(2*dropSize))
-    //     svgD.append('circle').attr('class', 'rheap').attr('cx', (xpos * 2*dropSize) + dropSize).attr('cy', barh).attr('r', dropSize).attr('stroke', 'black').attr('stroke-width', 1).attr('fill', heap[i].colour).attr('captured', heap[i].capturedblob);
-    //     barh -= 2*dropSize;
-    //   }
-    // }
+    //how 'high' is the 'bar' at this point?
+    barh = (heightD - 45) - ( (f+1) * 2 * dropSize );
+
+    //if the blob is below the top of bar height
+    if (bloby >= barh) {  
+      //increase the frequency of the heap at that point      
+      f += 1;
+
+      found = false;
+      for (let posx = 0; posx < heap.length; posx += 1) {
+        if (heap[posx].x === xpos) {
+          heap[posx].f += 1;
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        heap.push({x: xpos, rr: rr, f: 1, captured: capturedblob, colour: colour});  //add a new entry to heap array
+      }
+      //add a heap blob, but checked against top of displayable area
+      if (barh > 55) {
+        //now color according to missed or captured
+        svgD.append('circle').attr('class', 'rheap').attr('cx', (xpos * 2*dropSize) + dropSize).attr('cy', barh + 2*dropSize).attr('r', dropSize).attr('stroke', 'black').attr('stroke-width', 1).attr('fill', colour).attr('captured', capturedblob);
+      }
+
+      //remove the drop blob and wings
+      d3.select('#leftwing'+blobId).remove();
+      d3.select('#rightwing'+blobId).remove();
+      d3.select('#r'+blobId).remove();
+
+      return true; //item added to heap and removed from dance
+    }
+    else {
+      return false; //not added to heap
+    }
   }
-  //
+
+
 
   /*-------------------Panel 3 Controls ------------------*/
 
