@@ -25,12 +25,13 @@ Licence       GNU General Public Licence Version 3, 29 June 2007
 0.0.15  14 Oct 2020 Add test option for number of population points
 0.0.16  14 Oct 2020 #11 Revised the spec actions
 0.0.17  14 Oct 2020 #9 Sort out darker green for capture on
-0.1.0  14 Oct 2020 #10 heap code completed. Functionality now complete (I hope).
+0.1.0   14 Oct 2020 #10 heap code completed. Functionality now complete (I hope).
+0.1.1   15 Oct 2020 #7  Population display fixed.
 
 */
 //#endregion 
 
-let version = '0.1.0';
+let version = '0.1.1';
 
 let testing = false;
 
@@ -70,7 +71,7 @@ $(function() {
   let xscatters = [];
   let yscatters = [];
 
-  let backgroundN = 5000;
+  let backgroundN = 8000;
   let backgroundscatters = [];
   let xbscatters = [];
   let ybscatters = [];
@@ -1272,11 +1273,13 @@ $(function() {
 
   $displaypopn.on('change', function() {
     displaypopn = $displaypopn.is(':checked');
-
+    
+    displayBackgroundScatters();
+    
     if (sampletaken) {
-      displayBackgroundScatters();  //will only display if displaypopn = true
       drawScatterGraph();
     }
+
     statistics();
     displayStatistics();
   })
@@ -1784,10 +1787,10 @@ $(function() {
   }  
 
   //temp ability to change pop size.
-  $('#popsize').on('change', function() {
-    backgroundN = parseInt($('#popsize').val());
-    clear();
-  })
+  // $('#popsize').on('change', function() {
+  //   backgroundN = parseInt($('#popsize').val());
+  //   clear();
+  // })
 
 })
 
