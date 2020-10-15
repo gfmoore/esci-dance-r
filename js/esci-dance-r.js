@@ -27,11 +27,12 @@ Licence       GNU General Public Licence Version 3, 29 June 2007
 0.0.17  14 Oct 2020 #9 Sort out darker green for capture on
 0.1.0   14 Oct 2020 #10 heap code completed. Functionality now complete (I hope).
 0.1.1   15 Oct 2020 #7  Population display fixed.
+0.1.2   15 Oct 2020 #11 Fixed population nudge bars generating sample.
 
 */
 //#endregion 
 
-let version = '0.1.1';
+let version = '0.1.2';
 
 let testing = false;
 
@@ -1558,11 +1559,6 @@ $(function() {
     }
     $N1val.val(N1.toFixed(0));
     updateN1();
-
-    createScatters();
-    drawScatterGraph();
-    statistics();
-    displayStatistics();
   })
 
   $N1nudgebackward.on('mousedown', function() {
@@ -1584,11 +1580,6 @@ $(function() {
     if (N1 < 4) N1 = 4;
     $N1val.val(N1.toFixed(0));
     updateN1();
-
-    createScatters();
-    drawScatterGraph();
-    statistics();
-    displayStatistics();
   }
 
   $N1nudgeforward.on('mousedown', function() {
@@ -1610,11 +1601,6 @@ $(function() {
     if (N1 > 300) N1 = 300;
     $N1val.val(N1.toFixed(0));
     updateN1();
-
-    createScatters();
-    drawScatterGraph();
-    statistics();
-    displayStatistics();
   }
 
 /*----------------------------------------r nudge bars-----------*/
