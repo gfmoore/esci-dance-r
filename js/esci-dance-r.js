@@ -494,8 +494,6 @@ $(function() {
 
     if (danceon && displaylinetomarkrho) drawrholine();
 
-    // $displayCIs.prop('checked', false);
-    // displayCIs = false;
     $m1.text('-');
     $m2.text('-');
     $s1.text('-');
@@ -509,23 +507,13 @@ $(function() {
     $cito.text('-');
     $percentCIcapture.text('-');
 
-    //$displayr.prop('checked', false);
-    //d3.selectAll('.rtext').remove();
     //starting to be too many hacks in this code
     if (displayr) {
       svgS.append('text').text('r = ').attr('class', 'rtext').attr('x', 50).attr('y', y(2.8)).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.5rem').style('font-weight', 'bold').style('font-style', 'italic');
       svgS.append('text').text('-').attr('class', 'rtext').attr('x', 80).attr('y', y(2.8)).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.5rem').style('font-weight', 'bold');
     }
 
-
-    // $displaylinetomarkrho.prop('checked', false);
-    // displaylinetomarkrho = false;
-
-    // $showcapture.prop('checked', false);
-    // showcapture = false;
-
     emptyHeap();
-
   }
 
 
@@ -543,6 +531,7 @@ $(function() {
     redisplayDance();
 
     //what do I do about the heap???
+    redisplayHeap();
   }
 
   function setDisplaySize() {
@@ -1211,6 +1200,11 @@ $(function() {
         }
       }
     })
+  }
+
+
+  function redisplayHeap() {
+    
   }
 
   /*-------------------Panel 3 Controls ------------------*/
