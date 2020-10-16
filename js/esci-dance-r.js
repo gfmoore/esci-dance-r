@@ -30,13 +30,14 @@ Licence       GNU General Public Licence Version 3, 29 June 2007
 0.1.1   15 Oct 2020 #7  Population display fixed.
 0.1.2   15 Oct 2020 #11 Fixed population nudge bars generating sample.
 0.1.3   15 Oct 2020 #9  Fixed bugs on change to ci and what to display
-0.1.4   15 Oct 2020 #12  On resize just stop and clear
-0.1.5   15 Oct 2020 #12  Code added to redisplay heap etc on resize
+0.1.4   15 Oct 2020 #12 On resize just stop and clear
+0.1.5   15 Oct 2020 #12 Code added to redisplay heap etc on resize
+0.1.6   16 Oct 2020 #11 Rejigged code. For what should be seen or not on dance on/off. 
 
 */
 //#endregion 
 
-let version = '0.1.5';
+let version = '0.1.6';
 
 let testing = false;
 
@@ -486,9 +487,11 @@ $(function() {
     setDisplaySize();
     setupAxes();    
 
-    if (displaypopn) displayBackgroundScatters();
-
     clearDance();  //also clears blobs and capture statistics
+
+    emptyHeap();
+
+    if (displaypopn) displayBackgroundScatters();
 
     if (danceon && displaylinetomarkrho) drawrholine();
 
@@ -519,7 +522,6 @@ $(function() {
       svgS.append('text').text('-').attr('class', 'rtext').attr('x', 80).attr('y', y(2.8)).attr('text-anchor', 'start').attr('fill', 'black').style('font-size', '1.5rem').style('font-weight', 'bold');
     }
 
-    emptyHeap();
   }
 
 
@@ -1515,36 +1517,10 @@ $(function() {
   //hide or show the dances panel  
   $danceonoff.on('change', function() {
     danceon = $danceonoff.is(':checked');
-    setDisplaySize();
-    setupAxes();
 
-    displayBackgroundScatters();
-
-    drawScatterGraph();
-    displayStatistics();
-
-    clearScatterGraph();
-    clearDance();
+    clear();
 
     if (danceon) {
-
-      stop();
-      //$displaylinetomarkrho.prop('checked', false);
-      //displaylinetomarkrho = false;
-  
-      //$showcapture.prop('checked', false);
-      //showcapture = false;
-
-
-      //$showrheap.prop('checked', false);
-      //showrheap = false;
-
-      $cifrom.text('-');
-      $cito.text('-');
-
-      $ci.val(0.05).change();
-      alpha = parseFloat($ci.val());
-
       $displayD.show();
 
       $latestsamplesection.show();
