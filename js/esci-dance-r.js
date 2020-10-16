@@ -32,12 +32,13 @@ Licence       GNU General Public Licence Version 3, 29 June 2007
 0.1.3   15 Oct 2020 #9  Fixed bugs on change to ci and what to display
 0.1.4   15 Oct 2020 #12 On resize just stop and clear
 0.1.5   15 Oct 2020 #12 Code added to redisplay heap etc on resize
-0.1.6   16 Oct 2020 #11 Rejigged code. For what should be seen or not on dance on/off. 
+0.1.6   16 Oct 2020 #11 Rejigged code. For what should be seen or not on dance on/off.
+0.1.7   16 Oct 2020 #14 Fixed disappearing x, y labels 
 
 */
 //#endregion 
 
-let version = '0.1.6';
+let version = '0.1.7';
 
 let testing = false;
 
@@ -478,11 +479,7 @@ $(function() {
     stop();
 
     Fhalt = false;
-
     sampletaken = false;
-
-    $labelx.hide();
-    $labely.hide();
 
     setDisplaySize();
     setupAxes();    
@@ -1090,7 +1087,7 @@ $(function() {
     sampletaken = false;
     samplestaken = 0;
     captured     = 0;
-    capturedpcnt = 0;
+    percentCaptured = 0;
 
     $numbersamplestaken.text(0);
     $percentCIcapture.text('-');
@@ -1548,16 +1545,14 @@ $(function() {
   $displayCIs.on('change', function() {
     displayCIs = $displayCIs.is(':checked');
     displayDance();
+
     if (displayCIs && sampletaken) {
       $cifrom.text(lastlowerarm.toFixed(2));  //? are these still the latest?
       $cito.text(lastupperarm.toFixed(2));
-      //$percentCIcapture.text(percentCaptured.toFixed(2));
-      $percentCIcapture.text('-');
     }
     else {
       $cifrom.text('-');
       $cito.text('-');
-      $percentCIcapture.text('-');
     }
   })
 
@@ -1565,11 +1560,7 @@ $(function() {
   $ci.on('change', function() {
     alpha = parseFloat($ci.val()); 
 
-    stop();
-
-    clearScatterGraph();
-    clearDance();
-    emptyHeap();
+    clear();
 
   });
 
