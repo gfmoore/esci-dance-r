@@ -34,12 +34,13 @@ Licence       GNU General Public Licence Version 3, 29 June 2007
 0.1.5   15 Oct 2020 #12 Code added to redisplay heap etc on resize
 0.1.6   16 Oct 2020 #11 Rejigged code. For what should be seen or not on dance on/off.
 0.1.7   16 Oct 2020 #14 Fixed disappearing x, y labels 
-0.1.8   14 Oct 2020 #15 Added tips
+0.1.8   17 Oct 2020 #15 Added tips
+0.1.9   18 Oct 2020 #15 Corrections to tips
 
 */
 //#endregion 
 
-let version = '0.1.8';
+let version = '0.1.9';
 
 let testing = false;
 
@@ -1779,7 +1780,7 @@ $(function() {
   
     //Panel 1 N
     Tipped.create('#N1paneltip',        'Select sample size <em>N</em>, within 4 to 300',         { skin: 'esci', size: 'xlarge', showDelay: 750, behavior: 'mouse', target: 'mouse', maxWidth: 250, hideOthers: true, hideOnClickOutside: true, hideAfter: 0 });
-    Tipped.create('.N1slidertip',       'Select sample size ,em>N</em>, within 4 to 300',         { skin: 'esci', size: 'xlarge', showDelay: 750, behavior: 'mouse', target: 'mouse', maxWidth: 250, hideOthers: true, hideOnClickOutside: true, hideAfter: 0 });
+    Tipped.create('.N1slidertip',       'Select sample size <em>N</em>, within 4 to 300',         { skin: 'esci', size: 'xlarge', showDelay: 750, behavior: 'mouse', target: 'mouse', maxWidth: 250, hideOthers: true, hideOnClickOutside: true, hideAfter: 0 });
     Tipped.create('.N1labeltip',        'Size of sample',                                         { skin: 'esci', size: 'xlarge', showDelay: 750, behavior: 'mouse', target: 'mouse', maxWidth: 250, hideOthers: true, hideOnClickOutside: true, hideAfter: 0 });
 
     
@@ -1831,7 +1832,7 @@ $(function() {
     Tipped.create('.displaylinetomarkrhotip', 'Display line to mark &rho;',                       { skin: 'esci', size: 'xlarge', showDelay: 750, behavior: 'mouse', target: 'mouse', maxWidth: 250, hideOthers: true, hideOnClickOutside: true, hideAfter: 0 });
     Tipped.create('.showcapturetip', 'Turn on colours to indicate capture, red CIs do not capture &rho;', { skin: 'esci', size: 'xlarge', showDelay: 750, behavior: 'mouse', target: 'mouse', maxWidth: 250, hideOthers: true, hideOnClickOutside: true, hideAfter: 0 });
     Tipped.create('.showrheaptip', 'Display heap of <em>r</em> values',                           { skin: 'esci', size: 'xlarge', showDelay: 750, behavior: 'mouse', target: 'mouse', maxWidth: 250, hideOthers: true, hideOnClickOutside: true, hideAfter: 0 });
-    Tipped.create('.nosamplestakentip', 'Total number of sample in the current run',              { skin: 'esci', size: 'xlarge', showDelay: 750, behavior: 'mouse', target: 'mouse', maxWidth: 250, hideOthers: true, hideOnClickOutside: true, hideAfter: 0 });
+    Tipped.create('.nosamplestakentip', 'Total number of samples in the current run',              { skin: 'esci', size: 'xlarge', showDelay: 750, behavior: 'mouse', target: 'mouse', maxWidth: 250, hideOthers: true, hideOnClickOutside: true, hideAfter: 0 });
     Tipped.create('.percentCIcapturetip', 'Percent of CIs in current run that capture &rho;',     { skin: 'esci', size: 'xlarge', showDelay: 750, behavior: 'mouse', target: 'mouse', maxWidth: 250, hideOthers: true, hideOnClickOutside: true, hideAfter: 0 });
 
     
