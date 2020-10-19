@@ -37,10 +37,11 @@ Licence       GNU General Public Licence Version 3, 29 June 2007
 0.1.8   17 Oct 2020 #15 Added tips
 0.1.9   18 Oct 2020 #15 Corrections to tips
 
+1.0.0   19 Oct 2020 Version 1.0.0
 */
 //#endregion 
 
-let version = '0.1.9';
+let version = '1.0.0';
 
 let testing = false;
 
